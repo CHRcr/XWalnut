@@ -3,7 +3,7 @@ param()
 
 $ErrorActionPreference = "Continue"
 
-$appRoot = Join-Path $env:LOCALAPPDATA "wallpaper11"
+$appRoot = Join-Path $env:LOCALAPPDATA "XWalnut"
 $bridgeDir = Join-Path $appRoot "bridge"
 $bridgeUninstall = Join-Path $bridgeDir "uninstall.ps1"
 
@@ -72,7 +72,7 @@ if (Test-Path -LiteralPath $bridgeUninstall) {
     }
 }
 
-$startupShortcut = Join-Path ([Environment]::GetFolderPath("Startup")) "wallpaper11 Music Bridge.lnk"
+$startupShortcut = Join-Path ([Environment]::GetFolderPath("Startup")) "XWalnut Music Bridge.lnk"
 Remove-Item -LiteralPath $startupShortcut -Force -ErrorAction SilentlyContinue
 
 $exe = Get-LivelyExe
@@ -85,14 +85,14 @@ if ($exe) {
 }
 
 $wallpaperDir = Get-WallpaperDir
-$target = Join-Path $wallpaperDir "wallpapers" "wallpaper11"
+$target = Join-Path $wallpaperDir "wallpapers" "XWalnut"
 if (Test-Path -LiteralPath $target) {
     $infoPath = Join-Path $target "LivelyInfo.json"
     $isOurs = $false
     if (Test-Path -LiteralPath $infoPath) {
         try {
             $metadata = Read-Json -Path $infoPath
-            $isOurs = ($metadata.Title -eq "wallpaper11")
+            $isOurs = ($metadata.Title -eq "XWalnut")
         } catch { }
     }
     if ($isOurs) {
@@ -106,4 +106,4 @@ Remove-Item -LiteralPath (Join-Path $appRoot "music-cookie.txt") -Force -ErrorAc
 Remove-Item -LiteralPath (Join-Path $appRoot "music-bridge.log") -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath (Join-Path $appRoot "music-uninstall.log") -Force -ErrorAction SilentlyContinue
 
-Write-Host "[wallpaper11] wallpaper11 removal completed."
+Write-Host "[XWalnut] XWalnut removal completed."

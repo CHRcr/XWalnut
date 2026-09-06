@@ -1,7 +1,7 @@
 /* High-frequency confusing-word reminders for the word card. */
 'use strict';
 
-window.W11_WORD_CONFUSIONS = Object.freeze({
+window.XWALNUT_WORD_CONFUSIONS = Object.freeze({
   accept: 'accept v. 接受；except prep. 除……之外',
   except: 'except prep. 除……之外；accept v. 接受',
   adapt: 'adapt v. 适应；adopt v. 采用；收养',

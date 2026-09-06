@@ -5,7 +5,7 @@
  */
 'use strict';
 
-window.W11_WORD_PHRASES = Object.freeze({
+window.XWALNUT_WORD_PHRASES = Object.freeze({
   abandon: 'abandon oneself to 沉溺于；听任',
   ability: 'to the best of one’s ability 竭尽全力',
   absolute: 'absolute zero 绝对零度',

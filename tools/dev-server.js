@@ -36,8 +36,8 @@ const server = http.createServer((request, response) => {
     return;
   }
 
-  if (pathname === '/.wallpaper11-dev-health') {
-    response.writeHead(200, { 'Content-Type': 'text/plain' }).end('wallpaper11-dev-server');
+  if (pathname === '/.xwalnut-dev-health') {
+    response.writeHead(200, { 'Content-Type': 'text/plain' }).end('xwalnut-dev-server');
     return;
   }
 
@@ -62,25 +62,25 @@ const server = http.createServer((request, response) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`[wallpaper11] dev server: http://${HOST}:${PORT}`);
+  console.log(`[XWalnut] dev server: http://${HOST}:${PORT}`);
 });
 
 server.on('error', (error) => {
   if (error.code !== 'EADDRINUSE') throw error;
-  http.get(`http://${HOST}:${PORT}/.wallpaper11-dev-health`, (response) => {
+  http.get(`http://${HOST}:${PORT}/.xwalnut-dev-health`, (response) => {
     let body = '';
     response.setEncoding('utf8');
     response.on('data', (chunk) => { body += chunk; });
     response.on('end', () => {
-      if (response.statusCode === 200 && body === 'wallpaper11-dev-server') {
-        console.log(`[wallpaper11] reuse dev server: http://${HOST}:${PORT}`);
+      if (response.statusCode === 200 && body === 'xwalnut-dev-server') {
+        console.log(`[XWalnut] reuse dev server: http://${HOST}:${PORT}`);
       } else {
-        console.error(`[wallpaper11] port ${PORT} is occupied by another program`);
+        console.error(`[XWalnut] port ${PORT} is occupied by another program`);
         process.exitCode = 1;
       }
     });
   }).on('error', () => {
-    console.error(`[wallpaper11] port ${PORT} is occupied by another program`);
+    console.error(`[XWalnut] port ${PORT} is occupied by another program`);
     process.exitCode = 1;
   });
 });

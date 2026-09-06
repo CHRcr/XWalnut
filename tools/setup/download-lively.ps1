@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$appRoot = Join-Path $env:LOCALAPPDATA "wallpaper11"
+$appRoot = Join-Path $env:LOCALAPPDATA "XWalnut"
 $logPath = Join-Path $appRoot "lively-install.log"
 
 function Log-Info {
@@ -16,7 +16,7 @@ function Log-Info {
         New-Item -ItemType Directory -Path $appRoot -Force | Out-Null
         Add-Content -LiteralPath $logPath -Value ("[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message) -Encoding ASCII
     } catch { }
-    Write-Host "[wallpaper11] $Message"
+    Write-Host "[XWalnut] $Message"
 }
 
 Log-Info "Lively install step started (Local=$Local)"

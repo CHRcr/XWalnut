@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light dark">
-<title>wallpaper11</title>
+<title>XWalnut</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -39,7 +39,7 @@
 
     <section class="wordcard glass" id="wordCard" aria-live="polite">
       <header class="wc-pair-head">
-        <span>VOCABULARY · 2</span>
+        <span id="wcModeLabel">VOCABULARY · 2</span>
         <button class="wc-next" id="wcNext" type="button" aria-label="换一组单词" title="换一组单词">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -212,12 +212,20 @@
                 <span class="field-name">主题</span>
                 <div class="theme-choices" id="setTheme" role="radiogroup" aria-label="主题">
                   <button class="theme-choice" type="button" role="radio" data-value="calm" aria-checked="true">
-                    <i class="theme-preview calm" aria-hidden="true"></i>
-                    <span>沉静素雅<small>静态 · 低功耗</small></span>
+                    <span class="theme-preview calm" aria-hidden="true">
+                      <span class="theme-preview-clock">08:24</span>
+                      <span class="theme-preview-progress"></span>
+                      <span class="theme-preview-vocab"><i></i><i></i></span>
+                    </span>
+                    <span>沉静素雅<small>双词纵排 · 静态低功耗</small></span>
                   </button>
                   <button class="theme-choice" type="button" role="radio" data-value="sunset" aria-checked="false">
-                    <i class="theme-preview sunset" aria-hidden="true"></i>
-                    <span>暮色暖金<small>动态 · 视频背景</small></span>
+                    <span class="theme-preview sunset" aria-hidden="true">
+                      <span class="theme-preview-clock">20:18</span>
+                      <span class="theme-preview-progress"></span>
+                      <span class="theme-preview-vocab"><i></i><i></i></span>
+                    </span>
+                    <span>暮色暖金<small>单词单卡 · 动态视频</small></span>
                   </button>
                 </div>
               </div>
@@ -326,7 +334,7 @@
           </section>
 
           <section class="settings-page" data-settings-panel="about" aria-label="关于与数据" hidden>
-            <div class="settings-page-head"><span>关于</span><small>wallpaper11 · 希沃桌面适配</small></div>
+            <div class="settings-page-head"><span>关于</span><small>XWalnut · 希沃桌面适配</small></div>
             <div class="settings-grid about-settings-grid">
               <div class="settings-note settings-span-2">
                 桌面壁纸默认只接收鼠标与触屏。所有核心设置均可点击完成；中文标题、Cookie 和歌曲搜索可使用“粘贴”按钮。
@@ -338,14 +346,14 @@
               <div class="field field-card project-field">
                 <span class="field-name">项目</span>
                 <a class="github-btn" id="btnOpenProject"
-                   href="https://github.com/CHRcr/wallpaper11"
+                   href="https://github.com/CHRcr/XWalnut"
                    target="_blank" rel="noopener noreferrer"
-                   aria-label="在 GitHub 打开 CHRcr/wallpaper11">
+                   aria-label="在 GitHub 打开 CHRcr/XWalnut">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path fill="currentColor" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.093.682-.217.682-.483 0-.237-.009-.866-.014-1.7-2.782.605-3.369-1.343-3.369-1.343-.455-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.071 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.091-.647.349-1.088.635-1.338-2.221-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.56 9.56 0 0 1 12 6.836a9.55 9.55 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.337 4.695-4.566 4.943.359.31.678.921.678 1.856 0 1.34-.012 2.421-.012 2.75 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"/>
                   </svg>
                   <span>GitHub</span>
-                  <small>CHRcr/wallpaper11</small>
+                  <small>CHRcr/XWalnut</small>
                 </a>
               </div>
               <p class="media-note settings-span-2" id="mediaStatus"></p>
@@ -453,7 +461,7 @@
   <div class="toast glass-strong" id="toast" hidden></div>
 
   <script>
-    window.W11_MEDIA_LIBRARY = { music: [], backgroundUrl: '', mediaDir: 'media' };
+    window.XWALNUT_MEDIA_LIBRARY = { music: [], backgroundUrl: '', mediaDir: 'media' };
   </script>
   <script src="media/media-library.js" onerror="this.remove()"></script>
   <script src="js/word-data.js" onerror="this.remove()"></script>

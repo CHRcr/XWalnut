@@ -31,6 +31,7 @@ const livelyInstaller = fs.readFileSync(path.join(ROOT, 'tools', 'setup', 'livel
 const setupInstaller = fs.readFileSync(path.join(ROOT, 'tools', 'setup', 'setup.iss'), 'utf8');
 const wordImporter = fs.readFileSync(path.join(ROOT, 'tools', 'build-gaokao-words.ps1'), 'utf8');
 const html = fs.readFileSync(path.join(APP, 'index.html'), 'utf8');
+const styleSource = fs.readFileSync(path.join(APP, 'css', 'style.css'), 'utf8');
 const mainSource = fs.readFileSync(path.join(APP, 'js', 'main.js'), 'utf8');
 const playerSource = fs.readFileSync(path.join(APP, 'js', 'player.js'), 'utf8');
 const readmeSource = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
@@ -67,6 +68,13 @@ if ((html.match(/data-word-slot=/g) || []).length !== 2
   || !html.includes('id="settingsNav"')) {
   throw new Error('The Seewo layout must provide two word slots and horizontal settings navigation');
 }
+if (!html.includes('id="wcModeLabel"')
+    || (html.match(/theme-preview-vocab/g) || []).length !== 2
+    || !mainSource.includes("return activeTheme() === 'sunset' ? 1 : 2")
+    || !styleSource.includes('grid-template-areas:')
+    || !styleSource.includes('"word familyLabel"')) {
+  throw new Error('Theme word-card layouts and their visual previews are incomplete');
+}
 if (html.includes('data-scroll-surface')
   || /addEventListener\(\s*['"]wheel['"]/.test(mainSource + playerSource)
   || /addEventListener\(\s*['"](?:dragover|dragleave|drop)['"]/.test(mainSource + playerSource)
@@ -84,7 +92,7 @@ for (const control of ['btnTools', 'toolsMenu', 'btnWoodenFish', 'woodenFishMask
   }
 }
 const woodenFishSource = mainSource.match(/工具菜单 & 电子木鱼([\s\S]*?)工具栏 & 设置面板/)?.[1] || '';
-if (!woodenFishSource.includes("const TOOLS_KEY = 'w11-tools'")
+if (!woodenFishSource.includes("const TOOLS_KEY = 'xwalnut-tools'")
     || !woodenFishSource.includes('localStorage.setItem(TOOLS_KEY')
     || /new Audio|\.play\s*\(|setInterval|addEventListener\(\s*['"]key/.test(woodenFishSource)) {
   throw new Error('The wooden-fish tool must remain click-only, persistent, and silent');
@@ -136,8 +144,8 @@ const wordContext = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(APP, 'js/word-data.js'), 'utf8'), wordContext, {
   filename: 'app/js/word-data.js',
 });
-const data = wordContext.window.W11_WORD_DATA;
-const words = wordContext.window.W11_WORDS;
+const data = wordContext.window.XWALNUT_WORD_DATA;
+const words = wordContext.window.XWALNUT_WORDS;
 if (!data || !Array.isArray(words) || words.length !== 3500 || data.count !== words.length) {
   throw new Error('Unified vocabulary runtime must contain exactly 3500 lexical entries');
 }
@@ -261,4 +269,4 @@ for (const displayWord of ['hypothesis', 'interpret', 'strategy', 'virtual']) {
   }
 }
 
-console.log(`[wallpaper11] Lively project OK: ${Object.keys(properties).length} properties; ${data.sourceCount} source records + ${data.curatedAdditionCount} curated additions -> ${words.length} unified lexical entries; ${difficultyCounts.advanced + difficultyCounts.challenge} advanced/challenge entries; every entry has positive draw weight`);
+console.log(`[XWalnut] Lively project OK: ${Object.keys(properties).length} properties; ${data.sourceCount} source records + ${data.curatedAdditionCount} curated additions -> ${words.length} unified lexical entries; ${difficultyCounts.advanced + difficultyCounts.challenge} advanced/challenge entries; every entry has positive draw weight`);

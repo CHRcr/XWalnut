@@ -118,6 +118,6 @@ const library = {
 
 const output = path.join(MEDIA, 'media-library.js');
 fs.writeFileSync(output,
-  'window.W11_MEDIA_LIBRARY = ' + JSON.stringify(library, null, 2) + ';\n', 'utf8');
+  'window.XWALNUT_MEDIA_LIBRARY = ' + JSON.stringify(library, null, 2) + ';\n', 'utf8');
 
-console.log(`[wallpaper11] Lively media ready: ${library.music.length} music, ${videoFiles.length} video, ${copied} copied`);
+console.log(`[XWalnut] Lively media ready: ${library.music.length} music, ${videoFiles.length} video, ${copied} copied`);

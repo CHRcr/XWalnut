@@ -10,11 +10,11 @@ if (-not $env:LOCALAPPDATA) {
 }
 
 $sourceDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$appRoot = Join-Path $env:LOCALAPPDATA "wallpaper11"
+$appRoot = Join-Path $env:LOCALAPPDATA "XWalnut"
 $installDir = Join-Path $appRoot "music-bridge"
 $pidFile = Join-Path $installDir "bridge.pid"
 $startupDir = [Environment]::GetFolderPath("Startup")
-$shortcutPath = Join-Path $startupDir "wallpaper11 Music Bridge.lnk"
+$shortcutPath = Join-Path $startupDir "XWalnut Music Bridge.lnk"
 $serverPath = Join-Path $installDir "server.js"
 $bridgeVersion = (Get-Content -LiteralPath (Join-Path $sourceDir "package.json") -Raw |
     ConvertFrom-Json).version
@@ -50,11 +50,11 @@ if ($Bundled) {
     $nodeCommand = Get-Command node.exe -ErrorAction SilentlyContinue
     $npmCommand = Get-Command npm.cmd -ErrorAction SilentlyContinue
     if (-not $nodeCommand -or -not $npmCommand) {
-        throw "Node.js and npm are required. Use wallpaper11-music-setup.exe for a self-contained install."
+        throw "Node.js and npm are required. Use XWalnut-music-setup.exe for a self-contained install."
     }
 }
 
-Write-Host "[wallpaper11] Installing Music Bridge..."
+Write-Host "[XWalnut] Installing Music Bridge..."
 Stop-InstalledBridge
 Start-Sleep -Milliseconds 250
 
@@ -106,16 +106,16 @@ $shortcut = $shell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = $wscript
 $shortcut.Arguments = '"' + $vbsPath + '"'
 $shortcut.WorkingDirectory = $installDir
-$shortcut.Description = "wallpaper11 local Music Bridge"
+$shortcut.Description = "XWalnut local Music Bridge"
 $shortcut.Save()
 
-$uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\wallpaper11 Music Bridge"
+$uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\XWalnut Music Bridge"
 $uninstallScript = Join-Path $installDir "uninstall.ps1"
 $uninstallCommand = 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $uninstallScript + '"'
 $estimatedSize = [math]::Ceiling(((Get-ChildItem -LiteralPath $installDir -Recurse -File |
     Measure-Object -Property Length -Sum).Sum) / 1KB)
 New-Item -Path $uninstallKey -Force | Out-Null
-New-ItemProperty -Path $uninstallKey -Name "DisplayName" -Value "wallpaper11 Music Bridge" -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $uninstallKey -Name "DisplayName" -Value "XWalnut Music Bridge" -PropertyType String -Force | Out-Null
 New-ItemProperty -Path $uninstallKey -Name "DisplayVersion" -Value $bridgeVersion -PropertyType String -Force | Out-Null
 New-ItemProperty -Path $uninstallKey -Name "Publisher" -Value "CHRcr" -PropertyType String -Force | Out-Null
 New-ItemProperty -Path $uninstallKey -Name "InstallLocation" -Value $installDir -PropertyType String -Force | Out-Null
@@ -144,5 +144,5 @@ if (-not $health -or -not $health.ok) {
     throw "Music Bridge was installed but did not start. Check $appRoot\music-bridge.log"
 }
 
-Write-Host "[wallpaper11] Music Bridge is running on http://127.0.0.1:16311"
-Write-Host "[wallpaper11] It will start silently when this user signs in."
+Write-Host "[XWalnut] Music Bridge is running on http://127.0.0.1:16311"
+Write-Host "[XWalnut] It will start silently when this user signs in."

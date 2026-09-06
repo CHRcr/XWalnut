@@ -1,5 +1,5 @@
 /* ============================================================
-   wallpaper11 · 主逻辑
+   XWalnut · 主逻辑
    时钟 / 年度进度 / 高考倒计时 / 3500词卡片 / 今日作业 / 设置
    ============================================================ */
 'use strict';
@@ -19,7 +19,7 @@ const DEFAULTS = {
   musicCookie: '',             // 网易云 Cookie（MUSIC_U，VIP 用；可空）
 };
 
-const SETTINGS_KEY = 'w11-settings';
+const SETTINGS_KEY = 'xwalnut-settings';
 let hasPersistedSettings = false;
 function loadSettings() {
   try {
@@ -64,19 +64,19 @@ function closeOtherPanels(exceptEl) {
 }
 
 // Lively 暂停壁纸前收起交互面板，恢复时保留低调工具栏。
-window.__w11ClosePanels = () => closeOtherPanels(null);
+window.__xwalnutClosePanels = () => closeOtherPanels(null);
 
 // Lively 的 --pause-event 会调用此钩子，同步冻结视频、音乐和单词轮换。
 const powerHandlers = [];
 let powerRunning = true;
-window.__w11Power = (run) => {
+window.__xwalnutPower = (run) => {
   powerRunning = !!run;
   powerHandlers.forEach((fn) => fn(powerRunning));
 };
-window.__w11PowerRunning = () => powerRunning;
+window.__xwalnutPowerRunning = () => powerRunning;
 
 function runtimeLog(message) {
-  console.debug('[wallpaper11]', message);
+  console.debug('[XWalnut]', message);
 }
 
 /* ---------- Toast ---------- */
@@ -214,8 +214,8 @@ const SAMPLE_WORDS = [
   },
 ];
 
-const WORDS = Array.isArray(window.W11_WORDS) && window.W11_WORDS.length > 100
-  ? window.W11_WORDS
+const WORDS = Array.isArray(window.XWALNUT_WORDS) && window.XWALNUT_WORDS.length > 100
+  ? window.XWALNUT_WORDS
   : SAMPLE_WORDS;
 
 function wordKey(value) {
@@ -313,7 +313,12 @@ function rememberStudyGroup(word) {
 const successIndex = WORDS.findIndex((word) => wordKey(word.word) === 'success');
 const initialWordIndex = successIndex >= 0 ? successIndex : 0;
 const initialBlocked = new Set([studyGroupKey(WORDS[initialWordIndex])]);
-let wordIndices = [initialWordIndex, chooseStudyWordIndex(initialBlocked)];
+function themeWordCount() {
+  return activeTheme() === 'sunset' ? 1 : 2;
+}
+
+let wordIndices = [initialWordIndex];
+if (themeWordCount() === 2) wordIndices.push(chooseStudyWordIndex(initialBlocked));
 let wordTimer = null;
 let wordTransitionTimer = null;
 const wcInner = $('wcInner');
@@ -330,13 +335,42 @@ function renderWord(slot, i) {
   slot.querySelector('.wc-count').textContent = `${i + 1} / ${WORDS.length}`;
 }
 
+function fitWordIndicesToTheme(indices) {
+  const count = themeWordCount();
+  const next = indices.slice(0, count).filter((index) => Number.isInteger(index) && WORDS[index]);
+  const blocked = new Set(next.map((index) => studyGroupKey(WORDS[index])));
+  while (next.length < count) {
+    const index = chooseStudyWordIndex(blocked);
+    next.push(index);
+    blocked.add(studyGroupKey(WORDS[index]));
+  }
+  return next;
+}
+
+function syncWordCardControls(count = themeWordCount()) {
+  $('wcModeLabel').textContent = `VOCABULARY · ${count}`;
+  const action = count === 1 ? '换一个单词' : '换一组单词';
+  $('wcNext').setAttribute('aria-label', action);
+  $('wcNext').title = action;
+  wordSlots.forEach((slot, index) => { slot.hidden = index >= count; });
+}
+
 function renderWordPair(indices) {
-  wordSlots.forEach((slot, index) => renderWord(slot, indices[index]));
+  const fitted = fitWordIndicesToTheme(indices);
+  wordIndices = fitted;
+  syncWordCardControls(fitted.length);
+  fitted.forEach((wordIndex, slotIndex) => renderWord(wordSlots[slotIndex], wordIndex));
+}
+
+function syncWordLayoutForTheme() {
+  const count = themeWordCount();
+  syncWordCardControls(count);
+  if (wordIndices.length !== count) renderWordPair(wordIndices);
 }
 
 function chooseStudyWordPair() {
   const blocked = new Set();
-  return wordSlots.map(() => {
+  return Array.from({ length: themeWordCount() }, () => {
     const index = chooseStudyWordIndex(blocked);
     blocked.add(studyGroupKey(WORDS[index]));
     return index;
@@ -387,7 +421,7 @@ $('wcNext').addEventListener('click', () => {
 const idb = {
   open() {
     return new Promise((res, rej) => {
-      const r = indexedDB.open('w11-db', 1);
+      const r = indexedDB.open('xwalnut-db', 1);
       r.onupgradeneeded = () => r.result.createObjectStore('kv');
       r.onsuccess = () => res(r.result);
       r.onerror = () => rej(r.error);
@@ -568,7 +602,7 @@ function cookieParam() {
 
 /* ---------- 工具菜单 & 电子木鱼 ---------- */
 
-const TOOLS_KEY = 'w11-tools';
+const TOOLS_KEY = 'xwalnut-tools';
 
 function normalizeWoodenFishCount(value) {
   const count = Number(value);
@@ -1111,7 +1145,7 @@ async function refreshMusicBridgeStatus(notify = false) {
     if (notify) toast('Music Bridge 运行正常');
   } catch {
     renderMusicBridgeState('offline', '未连接');
-    if (notify) toast('请运行 wallpaper11-music-setup.exe');
+    if (notify) toast('请运行 XWalnut-music-setup.exe');
   } finally {
     clearTimeout(timer);
   }
@@ -1121,7 +1155,7 @@ $('btnCheckMusicBridge').addEventListener('click', () => refreshMusicBridgeStatu
 $('btnManageMusicBridge').addEventListener('click', (event) => {
   if (musicBridgeOnline) return;
   event.preventDefault();
-  toast('请先运行 wallpaper11-music-setup.exe');
+  toast('请先运行 XWalnut-music-setup.exe');
 });
 $('btnReset').addEventListener('click', () => {
   settings = { ...DEFAULTS };
@@ -1144,6 +1178,7 @@ function activeTheme() {
 function applySettings() {
   settings.theme = normalizeTheme(settings.theme);
   document.documentElement.dataset.theme = activeTheme();
+  syncWordLayoutForTheme();
   document.documentElement.style.setProperty('--ui-scale', settings.scale);
   $('clock').classList.toggle('hide-sec', !settings.showSec);
   document.querySelector('.cd-label').textContent = settings.examTitle;
@@ -1184,10 +1219,10 @@ function applyMediaLibrary(library) {
   const next = library && typeof library === 'object'
     ? library : { music: [], backgroundUrl: '', mediaDir: 'media' };
   next.music = Array.isArray(next.music) ? next.music : [];
-  window.W11_MEDIA_LIBRARY = next;
+  window.XWALNUT_MEDIA_LIBRARY = next;
   if (!livelyBackgroundSource) setBackgroundSource(next.backgroundUrl || '');
   updateMediaStatus(next);
-  document.dispatchEvent(new CustomEvent('w11-media-library', { detail: next }));
+  document.dispatchEvent(new CustomEvent('xwalnut-media-library', { detail: next }));
 }
 
 function refreshSettingsRuntime() {
@@ -1222,8 +1257,8 @@ window.livelyPropertyListener = function livelyPropertyListener(name, value) {
     }
     case 'backgroundVideo': {
       livelyBackgroundSource = localMediaUrl(value, 'media/video');
-      setBackgroundSource(livelyBackgroundSource || window.W11_MEDIA_LIBRARY.backgroundUrl || '');
-      updateMediaStatus(window.W11_MEDIA_LIBRARY);
+      setBackgroundSource(livelyBackgroundSource || window.XWALNUT_MEDIA_LIBRARY.backgroundUrl || '');
+      updateMediaStatus(window.XWALNUT_MEDIA_LIBRARY);
       return;
     }
     case 'homeworkImage': {
@@ -1258,8 +1293,8 @@ window.livelyWallpaperPlaybackChanged = function livelyWallpaperPlaybackChanged(
   try {
     const state = typeof data === 'string' ? JSON.parse(data) : data;
     const running = !(state && state.IsPaused);
-    if (!running) window.__w11ClosePanels();
-    window.__w11Power(running);
+    if (!running) window.__xwalnutClosePanels();
+    window.__xwalnutPower(running);
   } catch (error) {
     runtimeLog('pause event parse failed: ' + error.message);
   }
@@ -1370,7 +1405,7 @@ restartWordTimer();
 restartClockTimer();
 updateCountdown();
 loadHomework();
-applyMediaLibrary(window.W11_MEDIA_LIBRARY);
+applyMediaLibrary(window.XWALNUT_MEDIA_LIBRARY);
 applyBgMode();
 restartCameraPolling();
 

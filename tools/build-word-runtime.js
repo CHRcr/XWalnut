@@ -57,10 +57,10 @@ function defaultId(word) {
 function compileRuntime() {
   const source = loadSources();
   const curation = require(path.join(SOURCE_DIR, 'curation.js'));
-  const baseWords = source.W11_WORDS;
-  const sourceFamilies = source.W11_WORD_FAMILIES;
-  const sourcePhrases = source.W11_WORD_PHRASES;
-  const sourceConfusions = source.W11_WORD_CONFUSIONS;
+  const baseWords = source.XWALNUT_WORDS;
+  const sourceFamilies = source.XWALNUT_WORD_FAMILIES;
+  const sourcePhrases = source.XWALNUT_WORD_PHRASES;
+  const sourceConfusions = source.XWALNUT_WORD_CONFUSIONS;
 
   if (!Array.isArray(baseWords) || baseWords.length < 3000) {
     throw new Error('Base vocabulary source must contain at least 3000 records');
@@ -317,8 +317,8 @@ function serialize(payload) {
     ' * Human corrections belong in data/words/curation.js.',
     ' */',
     `'use strict';`,
-    `window.W11_WORD_DATA = Object.freeze(${JSON.stringify(payload)});`,
-    'window.W11_WORDS = window.W11_WORD_DATA.words;',
+    `window.XWALNUT_WORD_DATA = Object.freeze(${JSON.stringify(payload)});`,
+    'window.XWALNUT_WORDS = window.XWALNUT_WORD_DATA.words;',
     '',
   ].join('\n');
 }

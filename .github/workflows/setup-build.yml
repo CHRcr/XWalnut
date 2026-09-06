@@ -1,4 +1,4 @@
-name: Build unified installer
+name: Build XWalnut installer
 
 on:
   workflow_dispatch:
@@ -18,24 +18,24 @@ jobs:
         run: choco install innosetup --no-progress -y
       - name: Build unified installer
         run: npm run setup
-      - name: Build legacy music installer
+      - name: Build standalone music installer
         run: npm run music:package
       - uses: actions/upload-artifact@v4
         with:
-          name: wallpaper11-setup
+          name: XWalnut-setup
           path: |
-            dist/wallpaper11-setup.exe
-            dist/wallpaper11-setup.exe.sha256
-            dist/wallpaper11-lively.zip
-            dist/wallpaper11-music-setup.exe
+            dist/XWalnut-setup.exe
+            dist/XWalnut-setup.exe.sha256
+            dist/XWalnut-lively.zip
+            dist/XWalnut-music-setup.exe
           if-no-files-found: error
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/wallpaper11-setup.exe
-            dist/wallpaper11-setup.exe.sha256
-            dist/wallpaper11-lively.zip
-            dist/wallpaper11-music-setup.exe
+            dist/XWalnut-setup.exe
+            dist/XWalnut-setup.exe.sha256
+            dist/XWalnut-lively.zip
+            dist/XWalnut-music-setup.exe
           generate_release_notes: true

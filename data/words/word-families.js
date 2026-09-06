@@ -12,7 +12,7 @@
     phrases: Object.freeze([...phrases]),
   });
 
-  window.W11_WORD_FAMILIES = Object.freeze({
+  window.XWALNUT_WORD_FAMILIES = Object.freeze({
     ability: group([['able', 'adj. 能够的；有能力的'], ['unable', 'adj. 不能的'], ['enable', 'v. 使能够']]),
     academic: group([['academy', 'n. 学院；研究院'], ['academically', 'adv. 学术上；学业上']]),
     accept: group([['acceptance', 'n. 接受；认可'], ['acceptable', 'adj. 可接受的'], ['unacceptable', 'adj. 不可接受的']]),

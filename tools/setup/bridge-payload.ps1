@@ -30,7 +30,7 @@ if (Test-Path -LiteralPath $workRoot) {
 New-Item -ItemType Directory -Path $payloadRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
 
-Write-Host "[wallpaper11] Preparing Music Bridge dependencies..."
+Write-Host "[XWalnut] Preparing Music Bridge dependencies..."
 Push-Location $sourceDir
 try {
     & $npmCommand.Source ci --omit=dev
@@ -69,7 +69,7 @@ try {
     if (Test-Path -LiteralPath $localLicense) {
         Copy-Item -LiteralPath $localLicense -Destination $licenseTarget
     } else {
-        Write-Host "[wallpaper11] Warning: license download skipped (no network, no local license)."
+        Write-Host "[XWalnut] Warning: license download skipped (no network, no local license)."
     }
 }
 
@@ -78,9 +78,9 @@ New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 if (Test-Path -LiteralPath $OutZip) {
     Remove-Item -LiteralPath $OutZip -Force
 }
-Write-Host "[wallpaper11] Compressing self-contained bridge runtime..."
+Write-Host "[XWalnut] Compressing self-contained bridge runtime..."
 Compress-Archive -Path (Join-Path $payloadRoot "*") -DestinationPath $OutZip -CompressionLevel Optimal
 Remove-Item -LiteralPath $workRoot -Recurse -Force
 
 $sizeMb = [math]::Round((Get-Item -LiteralPath $OutZip).Length / 1MB, 1)
-Write-Host "[wallpaper11] Bridge payload -> $OutZip ($sizeMb MB)"
+Write-Host "[XWalnut] Bridge payload -> $OutZip ($sizeMb MB)"

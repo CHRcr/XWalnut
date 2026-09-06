@@ -1,4 +1,4 @@
-# camera-probe.ps1 - wallpaper11 camera in-use probe (ASCII only)
+# camera-probe.ps1 - XWalnut camera in-use probe (ASCII only)
 # Detection reads Windows privacy access-session records and never opens the
 # camera. Device power state is intentionally ignored because integrated
 # classroom cameras may remain in D0 even when no application is capturing.

@@ -4,13 +4,13 @@
 
 ## 一、项目是什么
 
-为**教室 Windows 希沃白板（触屏一体机）**制作的可交互动态壁纸，班级自用。仓库：<https://github.com/CHRcr/wallpaper11>
+为**教室 Windows 希沃白板（触屏一体机）**制作的可交互动态壁纸，班级自用。仓库：<https://github.com/CHRcr/XWalnut>
 
 ### 已确认需求
 
 1. 大数字时间是视觉重心。
 2. 时间下方显示日期与年度进度条。
-3. 高考 3500 词以“单词 + 变形 + 中文释义 + 短语”展示，约 50 秒随机淡换，不滚动。
+3. 高考 3500 词以“单词 + 变形 + 中文释义 + 短语”展示，暮色主题一次一个，沉静主题上下两个，约 50 秒随机淡换，不滚动。
 4. 设置可持久化。
 5. 更新只由用户手动从 GitHub 获取，不做后台更新。
 6. 音乐播放器藏在低调工具栏中，打开后是右上角卡片；支持本机音乐和网易云搜索。
@@ -35,8 +35,8 @@
 - **播放器形态：** 右上角紧凑毛玻璃卡片，歌词、歌单和搜索只在卡片内部展开。
 - **持久化：** 壁纸内设置与播放器状态使用 localStorage，存在本机保存值时忽略启动阶段 Lively 对默认属性的重放，避免覆盖壁纸内修改；运行期间从 Lively 自定义面板产生的新值仍同步写入 localStorage。作业图片通过点击文件选择器写入 IndexedDB，长期固定作业图也可通过 Lively 的 `homeworkImage` 属性选择。
 - **更新：** GitHub 项目入口保留，更新 Lively 壁纸包时不得提交或删除本机媒体源目录。
-- **一体化安装包：** `npm run setup` 产出 `dist/wallpaper11-setup.exe`（Inno Setup，内嵌 Lively 安装器 + `wallpaper11-lively.zip` + `bridge-payload.zip`）。`tools/netease-api/` 的 `build-installer.ps1` 与 setup 共用 `tools/setup/bridge-payload.ps1`；旧的 `wallpaper11-music-setup.exe` 保留为备用。
-- **安装器机制：** setup 靠 `%LOCALAPPDATA%\Lively Wallpaper\Library\wallpapers\wallpaper11\`（Lively v2 `setwp --file` 只接受库内目录）+ `setwp` 命令行应用壁纸；Lively 检测靠注册表 AppId `{E3E43E1B-DEC8-44BF-84A6-243DBA3F2CB1}_is1`。
+- **一体化安装包：** `npm run setup` 产出 `dist/XWalnut-setup.exe`（Inno Setup，内嵌 Lively 安装器 + `XWalnut-lively.zip` + `bridge-payload.zip`）。`tools/netease-api/` 的 `build-installer.ps1` 与 setup 共用 `tools/setup/bridge-payload.ps1`；独立的 `XWalnut-music-setup.exe` 保留为备用。
+- **安装器机制：** setup 靠 `%LOCALAPPDATA%\Lively Wallpaper\Library\wallpapers\XWalnut\`（Lively v2 `setwp --file` 只接受库内目录）+ `setwp` 命令行应用壁纸；Lively 检测靠注册表 AppId `{E3E43E1B-DEC8-44BF-84A6-243DBA3F2CB1}_is1`。
 - **Inno Setup 7+**：`SetupArchitecture=x64` 产出原生 AMD64 安装器；`build-setup.ps1` 自动引导 is-7_1_0 便携编译器，`setup.iss` 中文文案经 BOM 化后在 `dist\.setup-build\iss\` 编译。[Run] 的 Parameters 内嵌引号在 Inno 6.7.3 上解析有问题，统一用 [Code] Exec 拼引号。
 - **Lively 命令行坑：** v2 的 `setwp` 命令只有主实例的 gRPC AutomationCommand 入口会执行（冷启动实例只解析 ScreenSaver 参数）；安装器必须先冷启动主实例、等 named pipe `Grpc_LIVELY:DESKTOPWALLPAPERSYSTEM<user>` 就绪，再用 `& exe setwp --file ...`（第二实例转发执行），并用 `WallpaperLayout.json` 的 LivelyInfoPath 验证切换成功。
 
@@ -44,23 +44,23 @@
 
 - `app/` 是完整的单窗口网页壁纸。
 - 工具栏包含可扩展工具菜单；首个工具是无音效、仅点击交互且计数本机持久化的电子木鱼窗口。
-- 时钟、年度进度、倒计时、双词卡、作业板、横向分页设置和右上角音乐播放器均已保留；沉静主题已针对 1920×1080、150% 缩放重新避让。
-- 高考词表由 3423 条源记录人工校订并归并为 3399 个稳定 lexical entry，另人工补入 101 个清北班难度词，形成正好 3500 个可抽取词条；其中基础 3215 个、进阶 144 个、挑战 141 个。`W11_WORD_DATA` 内嵌于 `app/js/word-data.js`，可直接在 `file://` 下加载。
+- 时钟、年度进度、倒计时、主题化词卡、作业板、横向分页设置和右上角音乐播放器均已保留；暮色主题使用单词单卡，沉静主题在顶端纵向展示两词，并针对 1920×1080、150% 缩放重新避让。
+- 高考词表由 3423 条源记录人工校订并归并为 3399 个稳定 lexical entry，另人工补入 101 个清北班难度词，形成正好 3500 个可抽取词条；其中基础 3215 个、进阶 144 个、挑战 141 个。`XWALNUT_WORD_DATA` 内嵌于 `app/js/word-data.js`，可直接在 `file://` 下加载。
 - `window.livelyPropertyListener(name, value)` 已映射背景、时钟、倒计时、切词间隔、缩放、作业图和网易云配置。
 - `window.livelyWallpaperPlaybackChanged(data)` 已映射 Lively 暂停状态。
 - 本机歌单由 `tools/prepare-lively-media.js` 生成，支持子目录、同名 LRC、UTF-8 与 GBK 歌词。
-- `tools/package-lively.ps1` 输出 `dist/wallpaper11-lively.zip`，Lively 元数据位于 zip 根目录。
-- GitHub Actions 只做 Lively 项目静态检查，不构建 EXE，也不发布 Release。
+- `tools/package-lively.ps1` 输出 `dist/XWalnut-lively.zip`，Lively 元数据位于 zip 根目录。
+- GitHub Actions 在 tag `v*` 或手动触发时构建安装产物，tag 构建同时发布 Release。
 - 网易云使用自包含的本机 Music Bridge，只开放壁纸需要的接口并监听 `127.0.0.1:16311`；`npm run music:package` 生成无需 Node/npm 的单文件安装包，安装到当前用户目录并静默登录自启。
 - 壁纸设置页负责 Music Bridge 状态、Cookie 验证和本机管理入口；核心交互只依赖点击与剪贴板粘贴，不依赖滚轮、拖放或键盘转发。由于浏览器沙箱限制，首次安装仍由用户双击安装包确认。
 - 一体化安装器在进度条下显示 PowerShell 子步骤的实时日志。
-- `.github/workflows/setup-build.yml` 在 tag `v*` 或手动触发时构建 `wallpaper11-setup.exe` 并发布 Release；卸载入口只删壁纸库目录与 Bridge，不卸载 Lively。
+- `.github/workflows/setup-build.yml` 在 tag `v*` 或手动触发时构建 `XWalnut-setup.exe` 并发布 Release；卸载入口只删壁纸库目录与 Bridge，不卸载 Lively。
 
 ## 四、待办
 
-1. 在 Lively/Windows 11/希沃实机复验触屏、点击翻页、双词卡、WebView2 MP4、IndexedDB 和“其他应用获得焦点时暂停”。
+1. 在 Lively/Windows 11/希沃实机复验触屏、点击翻页、暮色单词单卡、沉静双词纵排、WebView2 MP4、IndexedDB 和“其他应用获得焦点时暂停”。
 2. 在希沃实机验证 Music Bridge 的安装、登录自启、MUSIC_U 粘贴和网络异常提示；不要重新引入桌面嵌入宿主。
-3. 在希沃实机验证 `wallpaper11-setup.exe` 的可见日志、Lively 首次静默安装、壁纸导入与 setwp、卸载不动 Lively 与其他壁纸；确认非管理员账户也能完成。
+3. 在希沃实机验证 `XWalnut-setup.exe` 的可见日志、Lively 首次静默安装、壁纸导入与 setwp、卸载不动 Lively 与其他壁纸；确认非管理员账户也能完成。
 
 ## 五、协作约定
 

@@ -333,8 +333,8 @@ $banner = @(
   ' * Main list: user-provided Word document.',
   ' * Inflection data: ECDICT, MIT License, https://github.com/skywind3000/ECDICT.',
   ' */',
-  "window.W11_WORD_DATA = Object.freeze($json);",
-  'window.W11_WORDS = window.W11_WORD_DATA.words;'
+  "window.XWALNUT_WORD_DATA = Object.freeze($json);",
+  'window.XWALNUT_WORDS = window.XWALNUT_WORD_DATA.words;'
 ) -join "`n"
 
 $outParent = Split-Path -Parent $OutFile

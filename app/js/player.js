@@ -1,5 +1,5 @@
 /* ============================================================
-   wallpaper11 · 音乐播放器（自研引擎，替代 APlayer）
+   XWalnut · 音乐播放器（自研引擎，替代 APlayer）
    在 main.js 之后加载（共享全局词法绑定：$ /
    settings / saveSettings / toast / escapeHtml / apiBase /
    cookieParam / closeOtherPanels / panelClosers / powerHandlers）
@@ -16,7 +16,7 @@ const MUSIC_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   '<circle cx="6" cy="18" r="3" fill="#ffcf9c"/><circle cx="18" cy="16" r="3" fill="#ffcf9c"/></svg>'
 );
 
-const PLAYER_KEY = 'w11-player';
+const PLAYER_KEY = 'xwalnut-player';
 
 function loadPlayerState() {
   const d = { volume: 0.45, mode: 'list', drawer: '', last: -1, nc: [], removed: [] };
@@ -69,7 +69,7 @@ function applyMediaLibrary(library) {
   }
 }
 
-document.addEventListener('w11-media-library', (event) => applyMediaLibrary(event.detail));
+document.addEventListener('xwalnut-media-library', (event) => applyMediaLibrary(event.detail));
 
 function resolveUrl(url) {
   // Lively WebView2 直接读取壁纸项目内的相对媒体路径。
@@ -252,7 +252,7 @@ function renderMeta(t) {
     mpArtist.textContent = '—';
     mpLrcPeek.textContent = '选择一首歌开始播放';
     mpCover.src = MUSIC_COVER;
-    document.title = 'wallpaper11';
+    document.title = 'XWalnut';
     return;
   }
   mpName.textContent = t.name;
@@ -260,7 +260,7 @@ function renderMeta(t) {
   mpArtist.textContent = t.artist || '未知艺术家';
   mpArtist.title = t.artist;
   mpCover.src = t.cover || MUSIC_COVER;
-  document.title = t.name + ' - ' + (t.artist || '') + ' · wallpaper11';
+  document.title = t.name + ' - ' + (t.artist || '') + ' · XWalnut';
 }
 
 function renderPlayState() {
@@ -740,7 +740,7 @@ powerHandlers.push((run) => {
     audio.play().catch(() => {});
   }
 });
-if (!window.__w11PowerRunning()) powerHandlers[powerHandlers.length - 1](false);
+if (!window.__xwalnutPowerRunning()) powerHandlers[powerHandlers.length - 1](false);
 
 /* ---------- 初始化 ---------- */
 
@@ -751,7 +751,7 @@ renderMode();
 applyDrawer();
 audio.volume = pState.volume;
 renderVolume();
-if (window.W11_MEDIA_LIBRARY) applyMediaLibrary(window.W11_MEDIA_LIBRARY);
+if (window.XWALNUT_MEDIA_LIBRARY) applyMediaLibrary(window.XWALNUT_MEDIA_LIBRARY);
 rebuildTracks(false);
 renderMeta(null);
 renderLrc('');

@@ -9,7 +9,7 @@ $distRoot = Join-Path $projectRoot "dist"
 $workRoot = Join-Path $distRoot ".music-installer-build"
 $payloadZip = Join-Path $workRoot "payload.zip"
 $sedPath = Join-Path $workRoot "music-bridge.sed"
-$outputPath = Join-Path $distRoot "wallpaper11-music-setup.exe"
+$outputPath = Join-Path $distRoot "XWalnut-music-setup.exe"
 $iexpress = Join-Path $env:WINDIR "System32\iexpress.exe"
 
 if (-not (Test-Path -LiteralPath $iexpress)) {
@@ -28,7 +28,7 @@ if (Test-Path -LiteralPath $workRoot) {
 }
 New-Item -ItemType Directory -Path $workRoot -Force | Out-Null
 
-Write-Host "[wallpaper11] Building Music Bridge payload..."
+Write-Host "[XWalnut] Building Music Bridge payload..."
 & (Join-Path $projectRoot "tools\setup\bridge-payload.ps1") -OutZip $payloadZip
 if ($LASTEXITCODE -ne 0) {
     throw "bridge-payload.ps1 failed with exit code $LASTEXITCODE."
@@ -61,11 +61,11 @@ AdminQuietInstCmd=%AdminQuietInstCmd%
 UserQuietInstCmd=%UserQuietInstCmd%
 SourceFiles=SourceFiles
 [Strings]
-InstallPrompt=Install wallpaper11 Music Bridge?
+InstallPrompt=Install XWalnut Music Bridge?
 DisplayLicense=
 FinishMessage=
 TargetName=$outputPath
-FriendlyName=wallpaper11 Music Bridge
+FriendlyName=XWalnut Music Bridge
 AppLaunched=powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File installer-bootstrap.ps1
 PostInstallCmd=<None>
 AdminQuietInstCmd=
@@ -83,7 +83,7 @@ Set-Content -LiteralPath $sedPath -Value $sed -Encoding ASCII
 if (Test-Path -LiteralPath $outputPath) {
     Remove-Item -LiteralPath $outputPath -Force
 }
-Write-Host "[wallpaper11] Building single-file installer..."
+Write-Host "[XWalnut] Building single-file installer..."
 $launchTime = Get-Date
 & $iexpress /N $sedPath
 
@@ -108,4 +108,4 @@ if ((Get-Process -Id $iexpressProcess.Id -ErrorAction SilentlyContinue) -or
 
 $sizeMb = [math]::Round((Get-Item -LiteralPath $outputPath).Length / 1MB, 1)
 Remove-Item -LiteralPath $workRoot -Recurse -Force
-Write-Host "[wallpaper11] Music Bridge installer -> $outputPath ($sizeMb MB)"
+Write-Host "[XWalnut] Music Bridge installer -> $outputPath ($sizeMb MB)"

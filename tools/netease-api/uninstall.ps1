@@ -7,15 +7,15 @@ if (-not $env:LOCALAPPDATA) {
     throw "LOCALAPPDATA is not available."
 }
 
-$appRoot = Join-Path $env:LOCALAPPDATA "wallpaper11"
+$appRoot = Join-Path $env:LOCALAPPDATA "XWalnut"
 $installDir = Join-Path $appRoot "music-bridge"
 $pidFile = Join-Path $installDir "bridge.pid"
 $serverPath = Join-Path $installDir "server.js"
-$shortcutPath = Join-Path ([Environment]::GetFolderPath("Startup")) "wallpaper11 Music Bridge.lnk"
+$shortcutPath = Join-Path ([Environment]::GetFolderPath("Startup")) "XWalnut Music Bridge.lnk"
 $logPath = Join-Path $appRoot "music-bridge.log"
 $musicCookiePath = Join-Path $appRoot "music-cookie.txt"
 $failureLog = Join-Path $appRoot "music-uninstall.log"
-$uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\wallpaper11 Music Bridge"
+$uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\XWalnut Music Bridge"
 
 if (Test-Path -LiteralPath $failureLog) {
     Remove-Item -LiteralPath $failureLog -Force -ErrorAction SilentlyContinue
@@ -74,4 +74,4 @@ if (Test-Path -LiteralPath $appRoot) {
     }
 }
 
-Write-Host "[wallpaper11] Music Bridge was removed."
+Write-Host "[XWalnut] Music Bridge was removed."

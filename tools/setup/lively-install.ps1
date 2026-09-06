@@ -12,8 +12,8 @@ $script:LivelyUninstallKeys = @(
     "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{E3E43E1B-DEC8-44BF-84A6-243DBA3F2CB1}_is1",
     "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{E3E43E1B-DEC8-44BF-84A6-243DBA3F2CB1}_is1"
 )
-$script:AppRoot = Join-Path $env:LOCALAPPDATA "wallpaper11"
-$script:LogPath = Join-Path $script:AppRoot "wallpaper11-install.log"
+$script:AppRoot = Join-Path $env:LOCALAPPDATA "XWalnut"
+$script:LogPath = Join-Path $script:AppRoot "XWalnut-install.log"
 
 function Log-Info {
     param([string]$Message)
@@ -21,7 +21,7 @@ function Log-Info {
         New-Item -ItemType Directory -Path $script:AppRoot -Force | Out-Null
         Add-Content -LiteralPath $script:LogPath -Value ("[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message) -Encoding ASCII
     } catch { }
-    Write-Host "[wallpaper11] $Message"
+    Write-Host "[XWalnut] $Message"
 }
 
 function Read-Json {
@@ -150,7 +150,7 @@ function Set-LivelyFocusPauseSettings {
     Set-JsonIntegerProperty -Object $settings -Name "AppFullscreenPause" -Value 0
     Set-JsonIntegerProperty -Object $settings -Name "ProcessMonitorAlgorithm" -Value 0
 
-    $tempPath = Join-Path $appDataDir "Settings.wallpaper11.tmp.json"
+    $tempPath = Join-Path $appDataDir "Settings.XWalnut.tmp.json"
     try {
         $json = $settings | ConvertTo-Json -Depth 100 -Compress
         $utf8 = New-Object System.Text.UTF8Encoding($false)
@@ -269,7 +269,7 @@ if (-not $exe) {
     throw "Lively Wallpaper is not installed and could not be found."
 }
 if (-not (Test-Path -LiteralPath $LivelyZip)) {
-    throw "wallpaper11-lively.zip is missing."
+    throw "XWalnut-lively.zip is missing."
 }
 
 Log-Info "Stopping Lively for wallpaper import..."
@@ -278,7 +278,7 @@ Set-LivelyFocusPauseSettings -Exe $exe
 
 $wallpaperDir = Get-WallpaperDir
 $wallpapersRoot = Join-Path $wallpaperDir "wallpapers"
-$target = Join-Path $wallpapersRoot "wallpaper11"
+$target = Join-Path $wallpapersRoot "XWalnut"
 
 if (Test-Path -LiteralPath $target) {
     $infoPath = Join-Path $target "LivelyInfo.json"
@@ -286,11 +286,11 @@ if (Test-Path -LiteralPath $target) {
     if (Test-Path -LiteralPath $infoPath) {
         try {
             $metadata = Read-Json -Path $infoPath
-            $isOurs = ($metadata.Title -eq "wallpaper11")
+            $isOurs = ($metadata.Title -eq "XWalnut")
         } catch { }
     }
     if (-not $isOurs) {
-        throw "The Lively library folder '$target' is not wallpaper11-owned; refusing to replace it."
+        throw "The Lively library folder '$target' is not XWalnut-owned; refusing to replace it."
     }
     Remove-Item -LiteralPath $target -Recurse -Force
 }
@@ -306,12 +306,12 @@ try {
     }
     throw "Cannot unpack wallpaper package: $($_.Exception.Message)"
 }
-Log-Info "wallpaper11 copied to $target"
+Log-Info "XWalnut copied to $target"
 
 $major = Get-LivelyMajor -Exe $exe
 $applied = Apply-Wallpaper -Exe $exe -Target $target -Major $major
 if (-not $applied) {
-    throw "wallpaper11 was installed but Lively did not apply it automatically; try clicking it in the Lively library."
+    throw "XWalnut was installed but Lively did not apply it automatically; try clicking it in the Lively library."
 }
 
 Log-Info "Collapsing Lively window..."

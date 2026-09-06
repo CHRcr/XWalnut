@@ -1,7 +1,7 @@
 'use strict'
 
 // Local-only bridge between the Lively web wallpaper and NetEase Cloud Music.
-// Only the endpoints used by wallpaper11 are exposed.
+// Only the endpoints used by XWalnut are exposed.
 
 const fs = require('node:fs')
 const http = require('node:http')
@@ -18,12 +18,12 @@ const {
 } = require('@neteasecloudmusicapienhanced/api')
 
 const HOST = '127.0.0.1'
-const PORT = Number.parseInt(process.env.WALLPAPER11_MUSIC_PORT || '16311', 10)
+const PORT = Number.parseInt(process.env.XWALNUT_MUSIC_PORT || '16311', 10)
 const PID_FILE = path.join(__dirname, 'bridge.pid')
 const MANAGE_TOKEN = randomBytes(24).toString('hex')
 const LOCAL_ORIGIN = `http://${HOST}:${PORT}`
 const APP_DATA_DIR = process.env.LOCALAPPDATA
-  ? path.join(process.env.LOCALAPPDATA, 'wallpaper11') : __dirname
+  ? path.join(process.env.LOCALAPPDATA, 'XWalnut') : __dirname
 const MUSIC_COOKIE_FILE = path.join(APP_DATA_DIR, 'music-cookie.txt')
 
 /* Best-effort camera in-use state, fed by a long-lived camera-probe.ps1 child. */
@@ -216,13 +216,13 @@ function managementPage() {
   const canUninstall = fs.existsSync(path.join(__dirname, 'uninstall.ps1'))
   return `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>wallpaper11 Music Bridge</title><style>
+<title>XWalnut Music Bridge</title><style>
 :root{color-scheme:dark;font-family:"Segoe UI","Microsoft YaHei",sans-serif;background:#170f19;color:#fff8ef}
 body{min-height:100vh;margin:0;display:grid;place-items:center;background:radial-gradient(circle at 70% 20%,#513343 0,transparent 42%),#170f19}
 main{width:min(440px,calc(100vw - 36px));padding:28px;border:1px solid #ffffff1f;border-radius:24px;background:#392637e8;box-shadow:0 24px 70px #0008}
 h1{margin:0 0 8px;font-size:24px}p{margin:8px 0;color:#d8c6ca;line-height:1.65}.status{display:flex;align-items:center;gap:9px;margin:22px 0;padding:14px;border-radius:14px;background:#ffffff0d}.dot{width:10px;height:10px;border-radius:50%;background:#8ee6a3;box-shadow:0 0 12px #8ee6a3}
 .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}button{min-height:44px;padding:0 16px;border:1px solid #ffcf9c55;border-radius:11px;background:#fff1df12;color:#fff8ef;font:inherit;cursor:pointer}button:hover{background:#fff1df20}button:disabled{cursor:default;opacity:.45}.danger{border-color:#ff9c9c55;color:#ffc4c4}small{display:block;margin-top:18px;color:#a9959d}#message{min-height:24px;color:#ffcf9c}.progress{height:8px;overflow:hidden;border-radius:999px;background:#ffffff12}.progress>i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#f2a7b3,#ffcf9c);box-shadow:0 0 14px #ffcf9c66;transition:width .35s ease}.status.stopped .dot{background:#a9959d;box-shadow:none}[hidden]{display:none!important}
-</style></head><body><main><h1>Music Bridge</h1><p>wallpaper11 的本机网易云组件</p><div class="status" id="status"><span class="dot"></span><span id="statusText">运行中 · ${require('./package.json').version}</span></div><p id="message"></p><div class="progress" id="progress" role="progressbar" aria-label="卸载进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i id="progressBar"></i></div><div class="actions"><button id="openLog">打开日志目录</button>${canUninstall ? '<button class="danger" id="uninstall">卸载组件</button>' : ''}</div><small>只监听 127.0.0.1，不接受局域网连接。</small></main><script>
+</style></head><body><main><h1>Music Bridge</h1><p>XWalnut 的本机网易云组件</p><div class="status" id="status"><span class="dot"></span><span id="statusText">运行中 · ${require('./package.json').version}</span></div><p id="message"></p><div class="progress" id="progress" role="progressbar" aria-label="卸载进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i id="progressBar"></i></div><div class="actions"><button id="openLog">打开日志目录</button>${canUninstall ? '<button class="danger" id="uninstall">卸载组件</button>' : ''}</div><small>只监听 127.0.0.1，不接受局域网连接。</small></main><script>
 const token='${MANAGE_TOKEN}',message=document.getElementById('message'),progress=document.getElementById('progress'),progressBar=document.getElementById('progressBar'),status=document.getElementById('status'),statusText=document.getElementById('statusText'),openLog=document.getElementById('openLog');
 const delay=milliseconds=>new Promise(resolve=>setTimeout(resolve,milliseconds));
 function setProgress(value,text){const safe=Math.max(0,Math.min(100,value));progress.hidden=false;progressBar.style.width=safe+'%';progress.setAttribute('aria-valuenow',String(safe));message.textContent=text;}
@@ -280,7 +280,7 @@ async function handleManagement(req, res, url) {
 
   if (url.pathname === '/manage/open-log') {
     const logDir = process.env.LOCALAPPDATA
-      ? path.join(process.env.LOCALAPPDATA, 'wallpaper11') : __dirname
+      ? path.join(process.env.LOCALAPPDATA, 'XWalnut') : __dirname
     fs.mkdirSync(logDir, { recursive: true })
     spawn('explorer.exe', [logDir], { detached: true, stdio: 'ignore', windowsHide: true }).unref()
     sendPrivateJson(res, 200, { ok: true, message: '已打开日志目录' })
@@ -354,7 +354,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === '/health') {
     sendJson(res, 200, {
       ok: true,
-      service: 'wallpaper11-music-bridge',
+      service: 'xwalnut-music-bridge',
       version: require('./package.json').version,
       pid: process.pid,
       uptime: Math.floor(process.uptime()),
@@ -412,7 +412,7 @@ function shutdown() {
 server.on('error', (error) => {
   removeOwnPidFile()
   if (error && error.code === 'EADDRINUSE') {
-    console.error(`[wallpaper11] port ${PORT} is already in use`)
+    console.error(`[XWalnut] port ${PORT} is already in use`)
   } else {
     console.error(error)
   }
@@ -422,7 +422,7 @@ server.on('error', (error) => {
 server.listen(PORT, HOST, () => {
   fs.writeFileSync(PID_FILE, String(process.pid), 'utf8')
   startCameraProbe()
-  console.log(`[wallpaper11] Music Bridge ready: http://${HOST}:${PORT}`)
+  console.log(`[XWalnut] Music Bridge ready: http://${HOST}:${PORT}`)
 })
 
 process.once('SIGINT', shutdown)

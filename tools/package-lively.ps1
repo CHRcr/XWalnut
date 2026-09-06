@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $appRoot = Join-Path $projectRoot "app"
 $distRoot = Join-Path $projectRoot "dist"
-$zipPath = Join-Path $distRoot "wallpaper11-lively.zip"
+$zipPath = Join-Path $distRoot "XWalnut-lively.zip"
 
 & node (Join-Path $PSScriptRoot "prepare-lively-media.js")
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -17,4 +17,4 @@ if (Test-Path -LiteralPath $zipPath) {
 }
 
 Compress-Archive -Path (Join-Path $appRoot "*") -DestinationPath $zipPath -CompressionLevel Optimal
-Write-Host "[wallpaper11] Lively package -> $zipPath"
+Write-Host "[XWalnut] Lively package -> $zipPath"

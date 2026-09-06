@@ -1,13 +1,13 @@
-# wallpaper11
+# XWalnut
 
 为教室 Windows 希沃白板（触屏一体机）设计的交互式动态壁纸，通过 [Lively Wallpaper](https://github.com/rocksdanister/lively) 运行。
 
-![wallpaper11 桌面预览](docs/wallpaper-preview.jpg)
+![XWalnut 桌面预览](docs/wallpaper-preview.jpg)
 
 ## 功能
 
 - 背景视频、大数字时钟、日期、年度进度和高考倒计时
-- 面向清北班的高考 3500 词，每次随机展示两个不同学习组的单词、中文释义、词族和常用搭配
+- 面向清北班的高考 3500 词：暮色主题一次展示一个词，沉静主题纵向展示两个不同学习组，均包含中文释义、词族和常用搭配
 - 底部工具栏：音乐播放器、今日作业和壁纸设置
 - 本机音乐、LRC 歌词和网易云搜索
 - Lively 暂停壁纸时，同步暂停背景视频、音乐和单词轮换
@@ -17,12 +17,12 @@
 
 ### 推荐：一体化安装包
 
-在目标电脑上直接运行 **`wallpaper11-setup.exe`**，它会自动完成：
+在目标电脑上直接运行 **`XWalnut-setup.exe`**，它会自动完成：
 
-1. 检测并安装 [Lively Wallpaper](https://github.com/rocksdanister/lively)（安装包已内置于 `wallpaper11-setup.exe`，教室断网也能装）；
-2. 安装 [wallpaper11 本地 Music Bridge](https://github.com/NeteaseCloudMusicApiEnhanced/api-enhanced)；
-3. 把 wallpaper11 导入 Lively 壁纸库；
-4. 立即将 wallpaper11 设为当前壁纸。
+1. 检测并安装 [Lively Wallpaper](https://github.com/rocksdanister/lively)（安装包已内置于 `XWalnut-setup.exe`，教室断网也能装）；
+2. 安装 [XWalnut 本地 Music Bridge](https://github.com/NeteaseCloudMusicApiEnhanced/api-enhanced)；
+3. 把 XWalnut 导入 Lively 壁纸库；
+4. 立即将 XWalnut 设为当前壁纸。
 
 全程不需要 Node.js、npm、Git、管理员权限，也不用手动拖入 ZIP。首次安装时 Windows 可能弹出「用户账户控制」（为安装 VC++/.NET 运行库），点击「是」即可；安装页会在进度条下持续显示 Lively、Music Bridge、导入和应用壁纸的执行日志。安装后打开壁纸底部设置，确认 **Music Bridge** 显示「已连接」，再粘贴 `MUSIC_U` 并验证即可。
 
@@ -32,10 +32,10 @@
 
 仅当无法使用一体化安装包时：
 
-1. 安装 Lively Wallpaper 后，把 `wallpaper11-lively.zip` 拖入 Lively 完成导入，再设为壁纸（使用 **WebView2** 网页引擎）。
-2. 网易云组件手动运行 `wallpaper11-music-setup.exe`。不用网易云时可跳过。
+1. 安装 Lively Wallpaper 后，把 `XWalnut-lively.zip` 拖入 Lively 完成导入，再设为壁纸（使用 **WebView2** 网页引擎）。
+2. 网易云组件手动运行 `XWalnut-music-setup.exe`。不用网易云时可跳过。
 
-`wallpaper11-music-setup.exe` 保留作为备用安装方式，正式推荐只使用 `wallpaper11-setup.exe`。
+`XWalnut-music-setup.exe` 保留作为备用安装方式，正式推荐只使用 `XWalnut-setup.exe`。
 
 ### 日常操作
 
@@ -51,9 +51,9 @@
 
 ## 卸载
 
-在 Windows「已安装的应用」中卸载 **wallpaper11**：
+在 Windows「已安装的应用」中卸载 **XWalnut**：
 
-- 卸载会停止并删除 Music Bridge（含自启动快捷方式），删除 wallpaper11 壁纸本体（仅限属于 wallpaper11 的库目录）。
+- 卸载会停止并删除 Music Bridge（含自启动快捷方式），删除 XWalnut 壁纸本体（仅限属于 XWalnut 的库目录）。
 - **不会**卸载 Lively Wallpaper，也不会删除其他 Lively 壁纸或用户数据。
 - Lively 若不再需要，可另行单独卸载，此时可在提示中选择是否保留本地数据目录。
 
@@ -73,9 +73,9 @@ local-homework/    作业图片
 npm run dev             # 启动本地预览 http://127.0.0.1:1420
 npm run words:build     # 从人工维护源生成统一运行时词表
 npm run check           # 检查 Lively 项目和词库
-npm run package         # 生成 dist/wallpaper11-lively.zip
-npm run music:package   # 生成 dist/wallpaper11-music-setup.exe（备用）
-npm run setup           # 生成 dist/wallpaper11-setup.exe 一体化安装包（内嵌 Lively，离线安装）
+npm run package         # 生成 dist/XWalnut-lively.zip
+npm run music:package   # 生成 dist/XWalnut-music-setup.exe（备用）
+npm run setup           # 生成 dist/XWalnut-setup.exe 一体化安装包（内嵌 Lively，离线安装）
 ```
 
 ## 词库维护
@@ -84,7 +84,7 @@ npm run setup           # 生成 dist/wallpaper11-setup.exe 一体化安装包�
 
 当前运行表由 3423 条基础记录归并为 3399 个稳定词条，并人工补入 101 个偏学术阅读与完形语境的难词，合计正好 3500 个可抽取词条。难度由人工维护，不按词长或拼写自动猜测：3215 个基础词、144 个进阶词和 141 个挑战词仍处于同一个词池中。
 
-抽取权重为：所有词基础权重 `1.0`；进阶词额外 `+1.0`，挑战词额外 `+2.0`；有词族、重要搭配或易混关系时再分别增加 `+0.3`、`+0.2`、`+0.2`。因此每个词都可出现，同时更适合清北班的 285 个重点词会适度提高频率。按当前词表总权重计算，单张词卡命中进阶或挑战词的概率约为 18.59%，每次两词同屏至少出现一个的概率约为 33.73%；最近 18 个学习组仍会被短期避开。
+抽取权重为：所有词基础权重 `1.0`；进阶词额外 `+1.0`，挑战词额外 `+2.0`；有词族、重要搭配或易混关系时再分别增加 `+0.3`、`+0.2`、`+0.2`。因此每个词都可出现，同时更适合清北班的 285 个重点词会适度提高频率。按当前词表总权重计算，单张词卡命中进阶或挑战词的概率约为 18.59%；沉静主题两词同屏时至少出现一个的概率约为 33.73%。最近 18 个学习组仍会被短期避开。
 
 如需从原始 Word 词表和 ECDICT 重新导入基础记录，使用：
 
@@ -103,4 +103,4 @@ ECDICT 只提供基础变形候选。同形词、大小写不同的 lexical entr
 
 ## 开源许可
 
-wallpaper11 的自有代码与原创内容采用 [MIT License](LICENSE) 开源。项目引用或随安装流程分发的 Lively Wallpaper、ECDICT、Node.js 及其他第三方组件不因此改变授权，仍分别遵循其原始许可证。
+XWalnut 的自有代码与原创内容采用 [MIT License](LICENSE) 开源。项目引用或随安装流程分发的 Lively Wallpaper、ECDICT、Node.js 及其他第三方组件不因此改变授权，仍分别遵循其原始许可证。
