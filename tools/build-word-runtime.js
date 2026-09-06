@@ -68,9 +68,17 @@ function compileRuntime() {
 
   // Merge records only when their display spelling and case are exactly equal.
   // AD/ad and Miss/miss therefore remain separate lexical entries.
+  const headwordCorrections = curation.sourceHeadwordCorrections || {};
+  const sourceHeadwords = new Set(baseWords.map((record) => String(record.word || '').trim()));
+  for (const [original, corrected] of Object.entries(headwordCorrections)) {
+    if (!sourceHeadwords.has(original) || typeof corrected !== 'string' || !corrected.trim()) {
+      throw new Error(`Invalid source headword correction: ${original}`);
+    }
+  }
   const mergedByExactWord = new Map();
   for (const record of baseWords) {
-    const word = String(record.word || '').trim();
+    const originalWord = String(record.word || '').trim();
+    const word = (headwordCorrections[originalWord] || originalWord).trim();
     if (!word) throw new Error('Base vocabulary contains an empty headword');
     if (!mergedByExactWord.has(word)) {
       mergedByExactWord.set(word, { word, meanings: [], forms: [] });

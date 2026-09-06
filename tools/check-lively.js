@@ -14,6 +14,10 @@ const required = [
   'LivelyInfo.json',
   'LivelyProperties.json',
   'assets/theme-calm.jpg',
+  'assets/vendor/wooden-fish/WoodenFish.svg',
+  'assets/vendor/wooden-fish/LICENSE',
+  'assets/vendor/lucide/LICENSE',
+  'THIRD_PARTY_NOTICES.md',
   'css/style.css',
   'js/main.js',
   'js/player.js',
@@ -71,8 +75,7 @@ if ((html.match(/data-word-slot=/g) || []).length !== 2
 if (!html.includes('id="wcModeLabel"')
     || (html.match(/theme-preview-vocab/g) || []).length !== 2
     || !mainSource.includes("return activeTheme() === 'sunset' ? 1 : 2")
-    || !styleSource.includes('grid-template-areas:')
-    || !styleSource.includes('"word familyLabel"')) {
+    || (html.match(/class="wc-family"/g) || []).length !== 2) {
   throw new Error('Theme word-card layouts and their visual previews are incomplete');
 }
 if (html.includes('data-scroll-surface')
@@ -81,9 +84,9 @@ if (html.includes('data-scroll-surface')
   || mainSource.includes('dataTransfer')) {
   throw new Error('Wallpaper interactions must not depend on wheel scrolling or drag-and-drop');
 }
-for (const control of ['mpResultsPageUp', 'mpResultsPageDown', 'mpListPageUp', 'mpListPageDown']) {
+for (const control of ['mpResultsRail', 'mpListRail', 'mpSearchForm', 'hwZoomIn', 'hwZoomOut', 'hwZoomFit']) {
   if (!html.includes(`id="${control}"`)) {
-    throw new Error(`Missing click-based paging control: ${control}`);
+    throw new Error(`Missing touch navigation control: ${control}`);
   }
 }
 for (const control of ['btnTools', 'toolsMenu', 'btnWoodenFish', 'woodenFishMask', 'woodenFishTap', 'woodenFishCount']) {
@@ -135,6 +138,7 @@ for (const file of [
   '../tools/build-word-runtime.js',
   '../tools/netease-api/server.js',
   '../data/words/curation.js',
+  '../data/words/review-2026-09.js',
 ]) {
   const result = spawnSync(process.execPath, ['--check', path.resolve(APP, file)], { stdio: 'inherit' });
   if (result.status !== 0) process.exit(result.status || 1);
@@ -180,6 +184,20 @@ for (const [index, word] of words.entries()) {
   }
   if (ids.has(word.id)) throw new Error(`Duplicate vocabulary id: ${word.id}`);
   if (exactHeadwords.has(word.word)) throw new Error(`Unmerged exact headword: ${word.word}`);
+  let parenthesisDepth = 0;
+  for (const char of word.word) {
+    if (char === '(') parenthesisDepth += 1;
+    if (char === ')') parenthesisDepth -= 1;
+    if (parenthesisDepth < 0) break;
+  }
+  if (parenthesisDepth !== 0) throw new Error(`Truncated vocabulary headword: ${word.word}`);
+  for (const meaning of word.meanings) {
+    if (!/[\u3400-\u9fff]/u.test(meaning)
+      || /[,，;；、]\s*$/.test(meaning)
+      || /\b(n|v|vi|vt|adj|adv|prep|pron|conj)\.\s*\1\./.test(meaning)) {
+      throw new Error(`Unreviewed import artifact in meaning: ${word.word} -> ${meaning}`);
+    }
+  }
   ids.add(word.id);
   exactHeadwords.add(word.word);
   difficultyCounts[word.difficulty] += 1;
@@ -229,6 +247,33 @@ if (!Number.isFinite(data.totalWeight) || Math.abs(data.totalWeight - totalWeigh
 
 function entry(displayWord) {
   return words.find((word) => word.word === displayWord);
+}
+
+// Guard observed source defects independently of the override implementation.
+for (const [displayWord, past, participle] of [
+  ['arise', 'arose', 'arisen'], ['awake', 'awoke', 'awoken'],
+  ...['put', 'cut', 'hit', 'hurt', 'let', 'read', 'cost', 'shut', 'spread', 'burst']
+    .map((word) => [word, word, word]),
+]) {
+  const reviewed = entry(displayWord);
+  for (const [label, value] of [['过去式', past], ['过去分词', participle]]) {
+    if (!reviewed?.forms.some((form) => form.label.includes(label) && form.value.split(' / ').includes(value))) {
+      throw new Error(`Missing reviewed irregular form: ${displayWord} -> ${label} ${value}`);
+    }
+  }
+}
+for (const displayWord of ['advice', 'information', 'baggage', 'equipment', 'homework', 'knowledge',
+  'music', 'weather', 'scenery', 'rice', 'bread', 'money', 'research', 'permission']) {
+  if (!entry(displayWord) || entry(displayWord).forms.some((form) => form.label === '复数')) {
+    throw new Error(`Generic plural is inappropriate for the displayed uncountable sense: ${displayWord}`);
+  }
+}
+if (!entry('DVD')?.meanings.join('').includes('光盘')
+    || !entry('random')?.meanings.some((meaning) => meaning.startsWith('adj.'))
+    || !entry('worried')?.meanings.join('').includes('担忧')
+    || entry('will')?.forms.length !== 1 || entry('will').forms[0].value !== 'would'
+    || !entry('resilience')?.family.length || !entry('resilience')?.phrases.length) {
+  throw new Error('September vocabulary corrections are incomplete');
 }
 
 const adEra = entry('AD');

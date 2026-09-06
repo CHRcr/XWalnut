@@ -1,5 +1,6 @@
 'use strict';
 
+const septemberReview = require('./review-2026-09');
 const wordList = (value) => value.trim().split(/\s+/);
 
 /*
@@ -11,18 +12,17 @@ const wordList = (value) => value.trim().split(/\s+/);
  */
 
 module.exports = {
-  version: '2026.09.02',
+  version: '2026.09.06',
+  sourceHeadwordCorrections: septemberReview.sourceHeadwordCorrections,
 
   // Qingbei-track extension: 101 manually reviewed academic and reading words
   // bring the runtime from 3399 unique base entries to 3500 drawable entries.
   newEntries: [
     { word: 'analyse', meanings: ['v. 分析'] },
     { word: 'anticipate', meanings: ['v. 预料；预期；期待'] },
-    { word: 'arise', meanings: ['vi. 出现；发生；起身'], forms: [
-      { label: '过去式', value: 'arose' },
-      { label: '过去分词', value: 'arisen' },
-      { label: '现在分词', value: 'arising' },
-    ] },
+    // arise is restored from the malformed base headword, so it is not an
+    // extension entry. Replace its duplicate slot with a reviewed reading word.
+    { word: 'resilience', meanings: ['n. 从困难中恢复的能力；韧性；弹性'] },
     { word: 'capacity', meanings: ['n. 能力；容量；容纳量'] },
     { word: 'cease', meanings: ['v. 停止；终止'] },
     { word: 'cite', meanings: ['v. 引用；引证；提及'] },
@@ -140,7 +140,7 @@ module.exports = {
       accomplish accumulate accurate acknowledge acquaintance acquire acute adapt adequate
       adjust administration advocate affection agency aggressive allocate alternative ambition
       analyse ancestor annual anticipate anxiety apparent appeal appetite application appoint
-      appreciate appropriate approve arise artificial aspect assess associate assumption atmosphere
+      appreciate appropriate approve resilience artificial aspect assess associate assumption atmosphere
       attach attain attitude authority automatic available average aware barrier behalf benefit
       boundary brief budget burden calculate candidate capacity category caution cease challenge
       circumstance cite civil clarify collapse colleague combine comment commercial commit communicate
@@ -180,6 +180,7 @@ module.exports = {
   },
 
   entryOverrides: {
+    ...septemberReview.entryOverrides,
     AD: {
       id: 'AD_anno_domini',
       meanings: ['n. 公元'],
@@ -419,6 +420,7 @@ module.exports = {
   },
 
   familyAdditions: {
+    ...septemberReview.familyAdditions,
     abolish: {
       members: [
         ['abolition', 'n. 废除；废止'],
@@ -838,6 +840,7 @@ module.exports = {
   // Phrases are owned by the displayed headword. This prevents a family member
   // from inheriting an unrelated phrase merely because it shares a root.
   phraseAssignments: {
+    ...septemberReview.phraseAssignments,
     abolish: ['abolish a system 废除一种制度'],
     ambition: [
       'have an ambition to do sth 有做某事的抱负',

@@ -44,15 +44,19 @@
 
 - `app/` 是完整的单窗口网页壁纸。
 - 工具栏包含可扩展工具菜单；首个工具是无音效、仅点击交互且计数本机持久化的电子木鱼窗口。
-- 时钟、年度进度、倒计时、主题化词卡、作业板、横向分页设置和右上角音乐播放器均已保留；暮色主题使用单词单卡，沉静主题在顶端纵向展示两词，并针对 1920×1080、150% 缩放重新避让。
+- 词卡沿用 2026-08-29 `edaa944` 的字体、词族行与底部样式；暮色主题一词一张，沉静主题将两个词条上下合并在右上角同一张卡片内。沉静背景插画小幅下移约 4vh，时间、倒计时与年度进度在上方居中成组排布，统一缩放。换词间隔保留预设，并可用触屏数字面板自定义为 5–600 秒。
+- 作业窗口顶部保留 50%–400% 缩放控件，放大后用鼠标或触屏拖动图片，无方向按钮；标题、时钟、操作区使用自适应分栏，避免相互覆盖。
+- 木鱼轮廓复用 MIT 许可的 Ares-Chang/wooden-fish SVG，素材及许可随 `app/` 打包，来源记录在 `app/THIRD_PARTY_NOTICES.md`。
 - 高考词表由 3423 条源记录人工校订并归并为 3399 个稳定 lexical entry，另人工补入 101 个清北班难度词，形成正好 3500 个可抽取词条；其中基础 3215 个、进阶 144 个、挑战 141 个。`XWALNUT_WORD_DATA` 内嵌于 `app/js/word-data.js`，可直接在 `file://` 下加载。
+- 2026-09 校订在 `data/words/review-2026-09.js`，核查范围与依据见同目录 `REVIEW-2026-09.md`。源词头修正在归并前执行，原始导入文件保留；不可依据拼写自动推断可数性。合并词卡只保留两词之间一条分隔线与共用的底部编号。
 - `window.livelyPropertyListener(name, value)` 已映射背景、时钟、倒计时、切词间隔、缩放、作业图和网易云配置。
 - `window.livelyWallpaperPlaybackChanged(data)` 已映射 Lively 暂停状态。
 - 本机歌单由 `tools/prepare-lively-media.js` 生成，支持子目录、同名 LRC、UTF-8 与 GBK 歌词。
 - `tools/package-lively.ps1` 输出 `dist/XWalnut-lively.zip`，Lively 元数据位于 zip 根目录。
 - GitHub Actions 在 tag `v*` 或手动触发时构建安装产物，tag 构建同时发布 Release。
 - 网易云使用自包含的本机 Music Bridge，只开放壁纸需要的接口并监听 `127.0.0.1:16311`；`npm run music:package` 生成无需 Node/npm 的单文件安装包，安装到当前用户目录并静默登录自启。
-- 壁纸设置页负责 Music Bridge 状态、Cookie 验证和本机管理入口；核心交互只依赖点击与剪贴板粘贴，不依赖滚轮、拖放或键盘转发。由于浏览器沙箱限制，首次安装仍由用户双击安装包确认。
+- 壁纸设置页负责 Music Bridge 状态、Cookie 验证和本机管理入口；歌单与搜索使用可点击刻度条。搜歌保留键盘输入、回车搜索和点击粘贴，不依赖滚轮或拖放。由于浏览器沙箱限制，首次安装仍由用户双击安装包确认。
+- `npm run lively:reload` 将运行文件同步到当前启用的 XWalnut Lively 库目录，通过 `seekwp --value 0` 刷新网页；保留媒体、Lively 属性和浏览器存储，不打包。被替换的运行文件备份在 `dist/.lively-hot-update/`。
 - 一体化安装器在进度条下显示 PowerShell 子步骤的实时日志。
 - `.github/workflows/setup-build.yml` 在 tag `v*` 或手动触发时构建 `XWalnut-setup.exe` 并发布 Release；卸载入口只删壁纸库目录与 Bridge，不卸载 Lively。
 
@@ -76,6 +80,6 @@
 - `file://` 下相对 `fetch()` 受限；本机歌单使用普通 `<script>` 加载生成的 `media/media-library.js`。
 - Lively `folderDropdown` 只扫描入口 HTML 下的指定目录，不递归；音乐子目录由项目脚本扫描。
 - Lively 属性是单向通知，壁纸内修改不会反写 `LivelyProperties.json`；本机 localStorage 是壁纸内设置的恢复来源，不能让启动时的 Lively 默认值覆盖它。
-- Lively 的鼠标键盘转发模式会隐藏桌面图标，因此不要把核心操作建立在键盘或中文输入法上；文本使用点击式剪贴板入口，复杂配置保留 Lively 自定义面板作为后备。
+- 搜歌输入框保持可编辑，支持 Lively 键盘转发；同时保留点击式剪贴板入口，方便只开启鼠标输入的教室设备。
 - 网易云官方 API 没有 CORS，必须走本地 Music Bridge；不要在浏览器里手动设置 Cookie 请求头。
 - PowerShell 5.1 对无 BOM UTF-8 脚本兼容较差；`package-lively.ps1` 保持 ASCII 内容。

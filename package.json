@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "node tools/dev-server.js",
+    "lively:reload": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/reload-lively.ps1",
     "media": "node tools/prepare-lively-media.js",
     "words:import": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-gaokao-words.ps1",
     "words:build": "node tools/build-word-runtime.js",

@@ -223,7 +223,9 @@ function wordKey(value) {
 }
 
 function familyRowsForWord(word) {
-  return Array.isArray(word.family) ? word.family.slice(0, 2) : [];
+  if (Array.isArray(word.family) && word.family.length) return word.family.slice(0, 2);
+  return (Array.isArray(word.forms) ? word.forms : []).slice(0, 2)
+    .map((form) => ({ word: form.value, meaning: form.label === '词表标注' ? '' : form.label }));
 }
 
 function phrasesForWord(word) {
@@ -234,12 +236,12 @@ function confusionForWord(word) {
   return Array.isArray(word.confusions) ? word.confusions.join('；') : '';
 }
 
-function renderWordFamily(slot, family) {
+function renderWordFamily(slot, family, labelText) {
   const list = slot.querySelector('.wc-derivs');
   const label = slot.querySelector('.wc-family-label');
   list.replaceChildren();
-  list.hidden = family.length === 0;
-  label.hidden = family.length === 0;
+  slot.querySelector('.wc-family').hidden = family.length === 0;
+  label.textContent = labelText;
   for (const row of family) {
     const value = row.word;
     const meaning = row.meaning;
@@ -258,7 +260,7 @@ function renderWordFamily(slot, family) {
 function renderWordPhrases(slot, phrases) {
   const list = slot.querySelector('.wc-phrases');
   list.replaceChildren();
-  list.hidden = phrases.length === 0;
+  slot.querySelector('.wc-foot').hidden = phrases.length === 0;
   for (const phrase of phrases) {
     const item = document.createElement('li');
     item.textContent = phrase;
@@ -328,11 +330,10 @@ function renderWord(slot, i) {
   const w = WORDS[i];
   slot.querySelector('.wc-word').textContent = w.word;
   slot.querySelector('.wc-pos').textContent = Array.isArray(w.meanings) ? w.meanings.join('；') : '';
-  renderWordFamily(slot, familyRowsForWord(w));
+  renderWordFamily(slot, familyRowsForWord(w), w.family?.length ? '词族' : '词形');
   renderWordPhrases(slot, phrasesForWord(w));
   renderWordConfusion(slot, confusionForWord(w));
   rememberStudyGroup(w);
-  slot.querySelector('.wc-count').textContent = `${i + 1} / ${WORDS.length}`;
 }
 
 function fitWordIndicesToTheme(indices) {
@@ -348,7 +349,7 @@ function fitWordIndicesToTheme(indices) {
 }
 
 function syncWordCardControls(count = themeWordCount()) {
-  $('wcModeLabel').textContent = `VOCABULARY · ${count}`;
+  $('wcModeLabel').textContent = `高考词汇 · ${WORDS.length}`;
   const action = count === 1 ? '换一个单词' : '换一组单词';
   $('wcNext').setAttribute('aria-label', action);
   $('wcNext').title = action;
@@ -360,6 +361,8 @@ function renderWordPair(indices) {
   wordIndices = fitted;
   syncWordCardControls(fitted.length);
   fitted.forEach((wordIndex, slotIndex) => renderWord(wordSlots[slotIndex], wordIndex));
+  $('wcCount').textContent = `${fitted.map((index) => index + 1).join(' · ')} / ${WORDS.length}`;
+  $('wcCount').setAttribute('aria-label', `词条编号 ${fitted.map((index) => index + 1).join('、')}，词库共 ${WORDS.length} 条`);
 }
 
 function syncWordLayoutForTheme() {
@@ -403,7 +406,7 @@ function stopWordTimer() {
 function restartWordTimer() {
   stopWordTimer();
   if (!powerRunning) return;
-  const sec = Math.min(600, Math.max(5, Number(settings.wordInterval) || 50));
+  const sec = normalizeWordInterval(settings.wordInterval);
   wordTimer = setInterval(() => nextWord(), sec * 1000);
 }
 
@@ -412,8 +415,8 @@ powerHandlers.push((run) => {
 });
 
 $('wcNext').addEventListener('click', () => {
+  restartWordTimer();          // 先重置计时，避免取消本次换词的淡出任务
   nextWord();
-  restartWordTimer();          // 手动切换后重新计时
 });
 
 /* ---------- 今日作业板（浮层窗口） ---------- */
@@ -461,6 +464,73 @@ const hwImg = $('hwImg');
 const hwDot = $('hwDot');
 let hwObjUrl = null;
 let livelyHomeworkSource = '';
+let hwZoom = 1;
+let hwPanX = 0;
+let hwPanY = 0;
+let hwDrag = null;
+
+function updateHomeworkView() {
+  const visible = !hwImg.hidden;
+  $('hwViewControls').hidden = !visible;
+  hwBody.classList.toggle('is-zoomed', visible && hwZoom > 1);
+  $('hwZoomValue').textContent = `${Math.round(hwZoom * 100)}%`;
+  $('hwZoomOut').disabled = hwZoom <= 0.5;
+  $('hwZoomIn').disabled = hwZoom >= 4;
+  const fit = Math.min(hwBody.clientWidth / (hwImg.naturalWidth || 1), hwBody.clientHeight / (hwImg.naturalHeight || 1));
+  const maxX = Math.max(0, (hwImg.naturalWidth * fit * hwZoom - hwBody.clientWidth) / 2);
+  const maxY = Math.max(0, (hwImg.naturalHeight * fit * hwZoom - hwBody.clientHeight) / 2);
+  hwPanX = Math.max(-maxX, Math.min(maxX, hwPanX));
+  hwPanY = Math.max(-maxY, Math.min(maxY, hwPanY));
+  hwImg.style.transform = `translate(${hwPanX}px, ${hwPanY}px) scale(${hwZoom})`;
+}
+
+function setHomeworkZoom(value) {
+  endHomeworkDrag();
+  hwZoom = Math.min(4, Math.max(0.5, value));
+  updateHomeworkView();
+  if (!hwImg.hidden && hwImg.naturalWidth) fitPanelToImage(hwImg.naturalWidth, hwImg.naturalHeight);
+  requestAnimationFrame(updateHomeworkView);
+}
+
+function resetHomeworkView() {
+  endHomeworkDrag();
+  hwZoom = 1;
+  hwPanX = hwPanY = 0;
+  updateHomeworkView();
+}
+
+$('hwZoomOut').addEventListener('click', () => setHomeworkZoom(hwZoom - 0.25));
+$('hwZoomIn').addEventListener('click', () => setHomeworkZoom(hwZoom + 0.25));
+$('hwZoomFit').addEventListener('click', () => { hwPanX = hwPanY = 0; setHomeworkZoom(1); });
+function endHomeworkDrag() {
+  const pointerId = hwDrag?.pointerId;
+  hwDrag = null;
+  hwBody.classList.remove('is-dragging');
+  if (pointerId !== undefined && hwBody.hasPointerCapture(pointerId)) hwBody.releasePointerCapture(pointerId);
+}
+hwBody.addEventListener('pointerdown', (event) => {
+  if (hwImg.hidden || hwZoom <= 1 || !event.isPrimary || event.button !== 0) return;
+  const rect = hwBody.getBoundingClientRect();
+  hwDrag = {
+    pointerId: event.pointerId, x: event.clientX, y: event.clientY,
+    panX: hwPanX, panY: hwPanY, scale: rect.width / hwBody.offsetWidth || 1,
+  };
+  hwBody.setPointerCapture(event.pointerId);
+  hwBody.classList.add('is-dragging');
+  event.preventDefault();
+});
+hwBody.addEventListener('pointermove', (event) => {
+  if (!hwDrag || event.pointerId !== hwDrag.pointerId) return;
+  hwPanX = hwDrag.panX + (event.clientX - hwDrag.x) / hwDrag.scale;
+  hwPanY = hwDrag.panY + (event.clientY - hwDrag.y) / hwDrag.scale;
+  updateHomeworkView();
+});
+for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  hwBody.addEventListener(type, (event) => {
+    if (event.pointerId === hwDrag?.pointerId) endHomeworkDrag();
+  });
+}
+new ResizeObserver(updateHomeworkView).observe(hwBody);
 
 function showHomeworkImage(blob) {
   if (hwObjUrl) URL.revokeObjectURL(hwObjUrl);
@@ -470,6 +540,7 @@ function showHomeworkImage(blob) {
   $('hwEmpty').style.display = 'none';
   hwBody.classList.add('has-image');
   hwDot.hidden = false;   // 工具栏按钮小红点
+  resetHomeworkView();
 }
 
 function showHomeworkImageUrl(url) {
@@ -480,6 +551,7 @@ function showHomeworkImageUrl(url) {
   $('hwEmpty').style.display = 'none';
   hwBody.classList.add('has-image');
   hwDot.hidden = false;
+  resetHomeworkView();
 }
 
 function clearHomework(silent = false) {
@@ -490,6 +562,7 @@ function clearHomework(silent = false) {
   $('hwEmpty').style.display = '';
   hwBody.classList.remove('has-image');
   hwDot.hidden = true;
+  resetHomeworkView();
   hwPanel.style.width = '';           // 恢复默认尺寸
   hwPanel.style.height = '';
   idb.del('hwImage').catch(() => {});
@@ -516,10 +589,13 @@ function openHomework() {
   closeOtherPanels(homeworkMask);
   homeworkMask.hidden = false;
   document.body.classList.add('hw-open');
+  if (!hwImg.hidden && hwImg.naturalWidth) fitPanelToImage(hwImg.naturalWidth, hwImg.naturalHeight);
+  requestAnimationFrame(updateHomeworkView);
   bgVideo.pause();                    // 背景静止，减少干扰
 }
 function closeHomework() {
   if (homeworkMask.hidden) return;
+  endHomeworkDrag();
   homeworkMask.hidden = true;
   document.body.classList.remove('hw-open');
   applyBgMode();                      // 按设置恢复视频
@@ -530,7 +606,7 @@ function fitPanelToImage(nw, nh) {
   const margin = 32;                  // hw-body 外边距 16×2
   const headerH = hwPanel.querySelector('.hw-head').offsetHeight || 62;
   const maxW = Math.min(880, window.innerWidth * 0.92) - margin;
-  const maxH = window.innerHeight * 0.88 - headerH - margin;
+  const maxH = Math.max(80, window.innerHeight * 0.88 - headerH - margin);
   const s = Math.min(maxW / nw, maxH / nh, 1.15);   // 最多放大到 1.15 倍
   const bw = Math.max(280, Math.round(nw * s));
   const bh = Math.max(200, Math.round(nh * s));
@@ -540,6 +616,7 @@ function fitPanelToImage(nw, nh) {
 
 hwImg.addEventListener('load', () => {
   if (hwImg.naturalWidth) fitPanelToImage(hwImg.naturalWidth, hwImg.naturalHeight);
+  requestAnimationFrame(updateHomeworkView);
 });
 
 window.addEventListener('resize', () => {
@@ -715,6 +792,86 @@ document.addEventListener('click', (event) => {
 
 /* ---------- 工具栏 & 设置面板 ---------- */
 
+function normalizeWordInterval(value) {
+  return Math.min(600, Math.max(5, Math.round(Number(value) || DEFAULTS.wordInterval)));
+}
+
+function syncWordIntervalControl() {
+  const seconds = normalizeWordInterval(settings.wordInterval);
+  syncChoiceGroup('setWordInterval', seconds);
+  $('setWordIntervalValue').textContent = seconds;
+  $('setWordIntervalCustom').classList.toggle('selected', ![30, 50, 90, 180].includes(seconds));
+}
+
+function applyWordInterval(value) {
+  settings.wordInterval = normalizeWordInterval(value);
+  saveSettings();
+  syncWordIntervalControl();
+  restartWordTimer();
+}
+
+const intervalEditor = $('wordIntervalEditor');
+let intervalDraft = '';
+let replaceIntervalDraft = true;
+
+function renderIntervalDraft() {
+  $('wordIntervalDraft').textContent = intervalDraft || '—';
+  const seconds = Number(intervalDraft);
+  $('wordIntervalApply').disabled = !intervalDraft || seconds < 5 || seconds > 600;
+}
+
+function closeIntervalEditor() {
+  if (intervalEditor.hidden) return;
+  intervalEditor.hidden = true;
+  if (!$('settingsMask').hidden) $('setWordIntervalCustom').focus();
+}
+
+function inputIntervalKey(key) {
+  if (key === 'clear') intervalDraft = '';
+  else if (key === 'backspace') intervalDraft = intervalDraft.slice(0, -1);
+  else if (/^\d$/.test(key)) {
+    if (replaceIntervalDraft) intervalDraft = '';
+    if (intervalDraft.length < 3) intervalDraft = (intervalDraft + key).replace(/^0+(?=\d)/, '');
+  }
+  replaceIntervalDraft = false;
+  renderIntervalDraft();
+}
+
+$('setWordIntervalCustom').addEventListener('click', () => {
+  intervalDraft = String(normalizeWordInterval(settings.wordInterval));
+  replaceIntervalDraft = true;
+  renderIntervalDraft();
+  intervalEditor.hidden = false;
+  $('wordIntervalKeypad').querySelector('button').focus();
+});
+$('wordIntervalKeypad').addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-key]');
+  if (button) inputIntervalKey(button.dataset.key);
+});
+$('wordIntervalCancel').addEventListener('click', closeIntervalEditor);
+$('wordIntervalApply').addEventListener('click', () => {
+  if ($('wordIntervalApply').disabled) return;
+  applyWordInterval(Number(intervalDraft));
+  closeIntervalEditor();
+});
+intervalEditor.addEventListener('click', (event) => {
+  if (event.target === intervalEditor) closeIntervalEditor();
+});
+intervalEditor.addEventListener('keydown', (event) => {
+  event.stopPropagation();
+  if (event.key === 'Escape') closeIntervalEditor();
+  else if (/^\d$/.test(event.key)) inputIntervalKey(event.key);
+  else if (event.key === 'Backspace') inputIntervalKey('backspace');
+  else if (event.key === 'Enter') $('wordIntervalApply').click();
+  else if (event.key === 'Tab') {
+    const buttons = [...intervalEditor.querySelectorAll('button:not(:disabled)')];
+    const index = buttons.indexOf(document.activeElement);
+    buttons[(index + (event.shiftKey ? -1 : 1) + buttons.length) % buttons.length].focus();
+  } else return;
+  event.preventDefault();
+});
+panelClosers.push({ el: intervalEditor, close: closeIntervalEditor });
+
 const settingsMask = $('settingsMask');
 let activeSettingsPage = 'appearance';
 
@@ -882,7 +1039,7 @@ function openSettings() {
   syncChoiceGroup('setTheme', normalizeTheme(settings.theme));
   syncExamDateControl();
   syncExamTitleControl();
-  syncChoiceGroup('setWordInterval', settings.wordInterval);
+  syncWordIntervalControl();
   syncChoiceGroup('setHour12', settings.hour12 ? '1' : '0');
   $('setShowSec').checked = settings.showSec;
   syncChoiceGroup('setBg', settings.bgMode);
@@ -899,6 +1056,7 @@ function closeSettings() {
   if (settingsMask.hidden) return;
   closeCalendar();
   settingsMask.hidden = true;
+  closeIntervalEditor();
 }
 
 panelClosers.push({ el: homeworkMask, close: closeHomework });
@@ -953,10 +1111,7 @@ $('setExamTitleChoices').addEventListener('click', (event) => {
   syncExamTitleControl();
   applySettings();
 });
-setupChoiceGroup('setWordInterval', (value) => {
-  settings.wordInterval = Number(value) || DEFAULTS.wordInterval;
-  saveSettings(); restartWordTimer();
-});
+setupChoiceGroup('setWordInterval', applyWordInterval);
 setupChoiceGroup('setHour12', (value) => {
   settings.hour12 = value === '1';
   saveSettings(); tick();
@@ -986,7 +1141,7 @@ let musicBridgeCookieConfigured = false;
 function updateMusicCookiePlaceholder() {
   $('setMusicCookie').placeholder = musicBridgeCookieConfigured
     ? '已保存到 Music Bridge'
-    : 'MUSIC_U 的值；可留空';
+    : '复制 MUSIC_U 后，点击粘贴';
 }
 
 async function readClipboardTextFromUserGesture(input = null) {
@@ -1226,7 +1381,9 @@ function applyMediaLibrary(library) {
 }
 
 function refreshSettingsRuntime() {
+  settings.wordInterval = normalizeWordInterval(settings.wordInterval);
   saveSettings();
+  syncWordIntervalControl();
   applySettings();
   applyBgMode();
   restartWordTimer();

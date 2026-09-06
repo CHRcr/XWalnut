@@ -121,11 +121,9 @@ const mpListOl     = $('mpListOl');
 const mpListCount  = $('mpListCount');
 const mpListClear  = $('mpListClear');
 const mpListRestore = $('mpListRestore');
-const mpListPageUp = $('mpListPageUp');
-const mpListPageDown = $('mpListPageDown');
+const mpListRail = $('mpListRail');
 const mpSearchPaste = $('mpSearchPaste');
-const mpResultsPageUp = $('mpResultsPageUp');
-const mpResultsPageDown = $('mpResultsPageDown');
+const mpResultsRail = $('mpResultsRail');
 const mpBar        = $('mpBar');
 const mpBuf        = $('mpBuf');
 const mpPlayed     = $('mpPlayed');
@@ -347,7 +345,7 @@ function renderList() {
   mpListRestore.hidden = pState.removed.length === 0;
   if (!tracks.length) {
     mpListOl.innerHTML = '<li class="mp-empty">歌单为空<br>把音乐放入 local-music 后，<br>运行 npm run media</li>';
-    updateListPageButtons();
+    updateListRail();
     return;
   }
   mpListOl.innerHTML = tracks.map((t, i) =>
@@ -366,23 +364,45 @@ function renderList() {
       mpListOl.scrollTop = playingRow.offsetTop - listH / 2;
     }
   }
-  requestAnimationFrame(updateListPageButtons);
+  requestAnimationFrame(updateListRail);
 }
 
-function updateListPageButtons() {
-  const max = Math.max(0, mpListOl.scrollHeight - mpListOl.clientHeight);
-  mpListPageUp.disabled = mpListOl.scrollTop <= 1;
-  mpListPageDown.disabled = max <= 1 || mpListOl.scrollTop >= max - 1;
+// A full-width touch target around a quiet, clickable position ruler.
+function updateScrollRail(view, rail) {
+  const max = Math.max(0, view.scrollHeight - view.clientHeight);
+  const enabled = view.clientHeight > 0 && max > 1;
+  const ratio = enabled ? Math.max(0, Math.min(1, view.scrollTop / max)) : 0;
+  rail.style.setProperty('--scroll-progress', ratio);
+  rail.setAttribute('aria-valuenow', Math.round(ratio * 100));
+  rail.setAttribute('aria-disabled', String(!enabled));
+  rail.tabIndex = enabled ? 0 : -1;
 }
-
-function scrollListPage(direction) {
-  const distance = Math.max(160, Math.round(mpListOl.clientHeight * 0.78));
-  mpListOl.scrollBy({ top: direction * distance, behavior: 'smooth' });
+function bindScrollRail(view, rail) {
+  const update = () => updateScrollRail(view, rail);
+  rail.addEventListener('click', (event) => {
+    const rect = rail.getBoundingClientRect();
+    const scale = rect.height / (rail.offsetHeight || 1);
+    const inset = 16 * scale;
+    const ratio = Math.max(0, Math.min(1, (event.clientY - rect.top - inset) / Math.max(1, rect.height - inset * 2)));
+    view.scrollTop = ratio * Math.max(0, view.scrollHeight - view.clientHeight);
+    update();
+  });
+  rail.addEventListener('keydown', (event) => {
+    const max = Math.max(0, view.scrollHeight - view.clientHeight);
+    const steps = {ArrowUp: -58, ArrowDown: 58, PageUp: -view.clientHeight * 0.8, PageDown: view.clientHeight * 0.8};
+    if (event.key === 'Home') view.scrollTop = 0;
+    else if (event.key === 'End') view.scrollTop = max;
+    else if (Object.hasOwn(steps, event.key)) view.scrollTop += steps[event.key];
+    else return;
+    event.preventDefault();
+    update();
+  });
+  view.addEventListener('scroll', update, {passive: true});
+  new ResizeObserver(update).observe(view);
+  update();
 }
-
-mpListPageUp.addEventListener('click', () => scrollListPage(-1));
-mpListPageDown.addEventListener('click', () => scrollListPage(1));
-mpListOl.addEventListener('scroll', updateListPageButtons, { passive: true });
+function updateListRail() { updateScrollRail(mpListOl, mpListRail); }
+bindScrollRail(mpListOl, mpListRail);
 
 mpListOl.addEventListener('click', (e) => {
   const del = e.target.closest('.mp-item-del');
@@ -559,7 +579,7 @@ function applyDrawer() {
   musicPanel.classList.toggle('show-list', pState.drawer === 'list');
   $('mpLyricsToggle').classList.toggle('active', pState.drawer === 'lyrics');
   $('mpListToggle').classList.toggle('active', pState.drawer === 'list');
-  if (pState.drawer === 'list') requestAnimationFrame(updateListPageButtons);
+  if (pState.drawer === 'list') requestAnimationFrame(updateListRail);
 }
 
 /* ---------- 面板开关 ---------- */
@@ -594,21 +614,28 @@ document.addEventListener('keydown', (e) => {
 /* ---------- 网易云搜索（经本地 Music Bridge） ---------- */
 
 let lastResults = [];
+let searchRevision = 0;
 
 function toggleMusicSearch(open) {
   const target = open !== undefined ? open : mpSearch.hidden;
   mpSearch.hidden = !target;
   musicPanel.classList.toggle('search-open', target);
+  if (target) mpInput.focus();
   if (!target) {
+    searchRevision++;
     mpInput.value = '';
     mpResults.innerHTML = '';
     lastResults = [];
-    updateResultsPageButtons();
+    updateResultsRail();
   }
 }
 
 $('musicSearchBtn').addEventListener('click', () => toggleMusicSearch());
 $('mpSearchBack').addEventListener('click', () => toggleMusicSearch(false));
+$('mpSearchForm').addEventListener('submit', (event) => {
+  event.preventDefault();
+  searchNetease(mpInput.value.trim());
+});
 mpSearchPaste.addEventListener('click', async () => {
   const result = await readClipboardTextFromUserGesture();
   const keyword = String(result.text || '').trim();
@@ -624,34 +651,24 @@ mpSearchPaste.addEventListener('click', async () => {
   searchNetease(keyword);
 });
 
-function updateResultsPageButtons() {
-  const max = Math.max(0, mpResults.scrollHeight - mpResults.clientHeight);
-  mpResultsPageUp.disabled = mpResults.scrollTop <= 1;
-  mpResultsPageDown.disabled = max <= 1 || mpResults.scrollTop >= max - 1;
-}
-
-function scrollResultsPage(direction) {
-  const distance = Math.max(160, Math.round(mpResults.clientHeight * 0.78));
-  mpResults.scrollBy({ top: direction * distance, behavior: 'smooth' });
-}
-
-mpResultsPageUp.addEventListener('click', () => scrollResultsPage(-1));
-mpResultsPageDown.addEventListener('click', () => scrollResultsPage(1));
-mpResults.addEventListener('scroll', updateResultsPageButtons, { passive: true });
+function updateResultsRail() { updateScrollRail(mpResults, mpResultsRail); }
+bindScrollRail(mpResults, mpResultsRail);
 
 async function searchNetease(kw) {
   if (!kw) return;
+  const revision = ++searchRevision;
   mpResults.scrollTop = 0;
   mpResults.innerHTML = '<div class="mp-tip">搜索中…</div>';
-  updateResultsPageButtons();
+  updateResultsRail();
   try {
     const r = await fetch(apiBase() + '/cloudsearch?keywords=' +
       encodeURIComponent(kw) + '&limit=20' + cookieParam());
     const j = await r.json();
+    if (revision !== searchRevision) return;
     lastResults = (j.result && j.result.songs) || [];
     if (!lastResults.length) {
       mpResults.innerHTML = '<div class="mp-tip">没有找到</div>';
-      updateResultsPageButtons();
+      updateResultsRail();
       return;
     }
     mpResults.innerHTML = lastResults.map((s, i) => {
@@ -664,10 +681,11 @@ async function searchNetease(kw) {
         '<div class="r-artist">' + escapeHtml((s.ar || []).map(a => a.name).join(' / ')) + '</div>' +
         '</div></div>';
     }).join('');
-    requestAnimationFrame(updateResultsPageButtons);
+    requestAnimationFrame(updateResultsRail);
   } catch {
+    if (revision !== searchRevision) return;
     mpResults.innerHTML = '<div class="mp-tip">Music Bridge 未运行<br>请先完成网易云组件安装</div>';
-    updateResultsPageButtons();
+    updateResultsRail();
   }
 }
 
