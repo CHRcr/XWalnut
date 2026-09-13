@@ -60,11 +60,25 @@ const $ = (id) => document.getElementById(id);
 // 面板互斥：同时只开一个（player.js 会把音乐面板也注册进来）
 const panelClosers = [];   // [{ el, close }]
 function closeOtherPanels(exceptEl) {
+  // 正在选作业图：文件对话框抢焦点导致的暂停不应把作业板收掉。
+  if (exceptEl !== homeworkMask && homeworkPickerOpen()) return;
   for (const p of panelClosers) if (p.el !== exceptEl) p.close();
 }
 
 // Lively 暂停壁纸前收起交互面板，恢复时保留低调工具栏。
 window.__xwalnutClosePanels = () => closeOtherPanels(null);
+
+// 例外：作业图片选择器打开期间不收起面板。系统文件对话框会抢走焦点，Lively 的
+// 前台应用暂停随即触发，若照常收起，用户选完图会看到「窗口自己关了」，还得再点
+// 一次作业按钮。这个标记由打开选择器的三个入口置位、由 change 事件（选中或取消
+// 都会触发）复位；万一对话框没开起来（未聚焦的页面调用 click 可能不弹），
+// 时间戳兜底过期，避免面板从此不再自动收起。
+const HOMEWORK_PICKER_WINDOW_MS = 10 * 60 * 1000;
+let homeworkPickerAt = 0;
+// 必须显式判断 homeworkPickerAt > 0：初值 0 会让 performance.now() - 0 落在窗口内，
+// 于是从页面加载起就误判为「正在选图」，导致暂停再也不收起任何面板。
+const homeworkPickerOpen = () =>
+  homeworkPickerAt > 0 && performance.now() - homeworkPickerAt < HOMEWORK_PICKER_WINDOW_MS;
 
 // Lively 的 --pause-event 会调用此钩子，同步冻结视频、音乐和单词轮换。
 const powerHandlers = [];
@@ -501,7 +515,13 @@ function resetHomeworkView() {
 
 $('hwZoomOut').addEventListener('click', () => setHomeworkZoom(hwZoom - 0.25));
 $('hwZoomIn').addEventListener('click', () => setHomeworkZoom(hwZoom + 0.25));
-$('hwZoomFit').addEventListener('click', () => { hwPanX = hwPanY = 0; setHomeworkZoom(1); });
+// 「适应」按钮已取消，改为点击百分比数字复位（键盘同样可用）。
+$('hwZoomValue').addEventListener('click', resetHomeworkView);
+$('hwZoomValue').addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  event.preventDefault();
+  resetHomeworkView();
+});
 function endHomeworkDrag() {
   const pointerId = hwDrag?.pointerId;
   hwDrag = null;
@@ -608,7 +628,7 @@ function fitPanelToImage(nw, nh) {
   const maxW = Math.min(880, window.innerWidth * 0.92) - margin;
   const maxH = Math.max(80, window.innerHeight * 0.88 - headerH - margin);
   const s = Math.min(maxW / nw, maxH / nh, 1.15);   // 最多放大到 1.15 倍
-  const bw = Math.max(280, Math.round(nw * s));
+  const bw = Math.max(660, Math.round(nw * s));     // 与 CSS .hw-panel 的 min-width 保持一致
   const bh = Math.max(200, Math.round(nh * s));
   hwPanel.style.width = (bw + margin) + 'px';
   hwPanel.style.height = (bh + headerH + margin) + 'px';
@@ -644,16 +664,19 @@ hwFileInput.type = 'file';
 hwFileInput.accept = 'image/*';
 hwFileInput.style.display = 'none';
 document.body.appendChild(hwFileInput);
+// 三个入口都要记下「选择器已打开」：hwBody 空白处、更换按钮、以及缓存命中前的点击。
+const openHomeworkPicker = () => { homeworkPickerAt = performance.now(); hwFileInput.click(); };
 hwFileInput.addEventListener('change', () => {
+  homeworkPickerAt = 0;                       // 选中或取消，对话框都已关闭
   saveHomeworkFile(hwFileInput.files && hwFileInput.files[0]);
   hwFileInput.value = '';
 });
 hwBody.addEventListener('click', (e) => {
   if (hwBody.classList.contains('has-image')) return;  // 有图时不触发（避免误点）
-  hwFileInput.click();
+  openHomeworkPicker();
 });
 
-$('hwReplace').addEventListener('click', () => hwFileInput.click());
+$('hwReplace').addEventListener('click', openHomeworkPicker);
 $('hwClear2').addEventListener('click', () => clearHomework());
 $('btnHomework').addEventListener('click', openHomework);
 

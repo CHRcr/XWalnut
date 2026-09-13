@@ -86,31 +86,34 @@
   <div class="overlay" id="homeworkMask" hidden>
     <div class="hw-panel" role="dialog" aria-label="今日作业">
       <header class="hw-head">
-        <div class="hw-head-left">
+        <span class="hw-head-left">
           <span class="hw-head-title">今日份作业</span>
           <span class="hw-head-sub">美味的小练习~</span>
-        </div>
+        </span>
         <span class="hw-clock" id="hwClock">--:--:--</span>
-        <div class="hw-actions">
-          <button class="mini-btn" id="hwReplace">更换</button>
-          <button class="mini-btn danger" id="hwClear2">清空</button>
-          <span class="hw-cam" id="hwCamBadge" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-              <path d="M21 3v5h-5"/>
-              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-              <path d="M8 16H3v5"/>
-            </svg>
-          </span>
-          <button class="panel-close" id="hwClose" title="关闭">&#10005;</button>
-        </div>
-        <div class="hw-view-controls" id="hwViewControls" hidden>
-          <div class="hw-zoom-controls" aria-label="作业图片缩放">
-            <button type="button" id="hwZoomOut" aria-label="缩小作业图片">−</button>
-            <output id="hwZoomValue" aria-live="polite">100%</output>
-            <button type="button" id="hwZoomIn" aria-label="放大作业图片">+</button>
-            <button type="button" id="hwZoomFit">适应</button>
+        <div class="hw-head-right">
+          <div class="hw-actions">
+            <button class="mini-btn" id="hwReplace">更换</button>
+            <button class="mini-btn danger" id="hwClear2">清空</button>
+            <span class="hw-cam" id="hwCamBadge" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+              </svg>
+            </span>
+            <button class="panel-close" id="hwClose" title="关闭">&#10005;</button>
+          </div>
+          <!-- 缩放与时钟同处一行右侧；面板放不下时整组由外层网格折到下一行。
+               不设「适应」按钮：点百分比数字即恢复 100%。 -->
+          <div class="hw-view-controls" id="hwViewControls" hidden>
+            <div class="hw-zoom-controls" aria-label="作业图片缩放">
+              <button type="button" id="hwZoomOut" aria-label="缩小作业图片">−</button>
+              <output id="hwZoomValue" role="button" tabindex="0" title="点击恢复 100%">100%</output>
+              <button type="button" id="hwZoomIn" aria-label="放大作业图片">+</button>
+            </div>
           </div>
         </div>
       </header>

@@ -84,10 +84,15 @@ if (html.includes('data-scroll-surface')
   || mainSource.includes('dataTransfer')) {
   throw new Error('Wallpaper interactions must not depend on wheel scrolling or drag-and-drop');
 }
-for (const control of ['mpResultsRail', 'mpListRail', 'mpSearchForm', 'hwZoomIn', 'hwZoomOut', 'hwZoomFit']) {
+for (const control of ['mpResultsRail', 'mpListRail', 'mpSearchForm', 'hwZoomIn', 'hwZoomOut', 'hwZoomValue']) {
   if (!html.includes(`id="${control}"`)) {
     throw new Error(`Missing touch navigation control: ${control}`);
   }
+}
+// 缩放复位入口：去掉独立「适应」按钮后，百分比数字本身必须可点。
+if (!/id="hwZoomValue"[^>]*role="button"/.test(html)
+  || !mainSource.includes("$('hwZoomValue').addEventListener('click', resetHomeworkView)")) {
+  throw new Error('Zoom reset must stay reachable through the percentage readout');
 }
 for (const control of ['btnTools', 'toolsMenu', 'btnWoodenFish', 'woodenFishMask', 'woodenFishTap', 'woodenFishCount']) {
   if (!html.includes(`id="${control}"`)) {
