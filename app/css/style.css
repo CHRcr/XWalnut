@@ -421,7 +421,7 @@ input[type="date"] {
 
 .hw-panel {
   width: min(700px, 58vw);            /* 空状态默认尺寸；有图时 JS 按图片比例自适应 */
-  min-width: 660px;                  /* 头部单行所需宽度；实测有图时需约 620px（150% 缩放）*/
+  min-width: 660px;                  /* 与 fitPanelToImage 的下限一致，保证头部单行 */
   height: min(48vh, 520px);
   max-width: min(880px, 92vw);
   max-height: 88vh;
@@ -438,9 +438,8 @@ input[type="date"] {
   transition: width 0.35s var(--ease-soft), height 0.35s var(--ease-soft);
 }
 
-/* 头部：中间列是时钟、且自动宽度，左右两列各按内容——时钟因此恰好居中，
-   网格又先给时钟留出位置，右侧控件不会压到时间上（早期版本把时钟绝对定位居中，
-   实测 700-900px 会盖住“−”和百分比；等分 1fr 又会把右侧挤到换行）。 */
+/* 头部：中间列是时钟且自动宽度，左右各按内容——时钟居中，右侧控件也压不到它
+   （绝对定位居中会盖住缩放按钮，等分 1fr 会把右侧挤到换行，实测均不可用）。 */
 .hw-head {
   position: relative;
   display: grid;
@@ -489,8 +488,7 @@ input[type="date"] {
   color: var(--ink-faint);
 }
 
-/* 右侧控件：与时钟同一行的第 3 列。不让自己折行——折行由外层网格统一决定，
-   否则盒宽刚好够用时浏览器也会提前把缩放组挤到第二行。 */
+/* 右侧控件：与时钟同一行；折行由外层网格统一决定，自己不折 */
 .hw-head-right {
   grid-area: right;
   justify-self: end;      /* 列宽按内容，整组贴右 */
@@ -518,11 +516,8 @@ input[type="date"] {
 
 .hw-panel { container-type: inline-size; }
 
-/* 折行阈值：由实测内容宽度决定，而不是 Bootstrap 式的习惯值。
-   单行实际需要（150% 缩放下实测）：标题 96 + 时钟 93 + 缩放 147 + 按钮 214
-   + 两个列间距 24 + 内边距 32 = 606px。
-   因此有图（带缩放条）时 620px 以下才折行；用 800px 会让 627-800px 这段
-   明明放得下的面板白白折成两行。 */
+/* 折行阈值按实测内容宽度定：有图（带缩放条）单行需 606px（150% 缩放实测），
+   故 620px 以下才折行；无图只需约 480px。 */
 @container (max-width: 800px) {
   .hw-head:has(#hwViewControls:not([hidden])) .hw-head-sub { display: none; }
 }
@@ -533,9 +528,6 @@ input[type="date"] {
   }
   .hw-head:has(#hwViewControls:not([hidden])) .hw-clock { justify-self: end; }
 }
-/* 无图时：410px 以下收掉副标题，再窄才整组折行。
-   阈值按实测内容宽度定：无图约 478px、有图（带缩放条）约 534px（150% 缩放下）。
-   面板有 520px 的 min-width 托底，所以下列折行规则只在异常窄的面板下生效。 */
 @container (max-width: 410px) {
   .hw-head:not(:has(#hwViewControls:not([hidden]))) .hw-head-sub { display: none; }
 }

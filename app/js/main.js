@@ -60,7 +60,7 @@ const $ = (id) => document.getElementById(id);
 // 面板互斥：同时只开一个（player.js 会把音乐面板也注册进来）
 const panelClosers = [];   // [{ el, close }]
 function closeOtherPanels(exceptEl) {
-  // 正在选作业图：文件对话框抢焦点导致的暂停不应把作业板收掉。
+  // 正在选作业图：文件对话框抢焦点导致的暂停不应把作业板收掉
   if (exceptEl !== homeworkMask && homeworkPickerOpen()) return;
   for (const p of panelClosers) if (p.el !== exceptEl) p.close();
 }
@@ -68,15 +68,12 @@ function closeOtherPanels(exceptEl) {
 // Lively 暂停壁纸前收起交互面板，恢复时保留低调工具栏。
 window.__xwalnutClosePanels = () => closeOtherPanels(null);
 
-// 例外：作业图片选择器打开期间不收起面板。系统文件对话框会抢走焦点，Lively 的
-// 前台应用暂停随即触发，若照常收起，用户选完图会看到「窗口自己关了」，还得再点
-// 一次作业按钮。这个标记由打开选择器的三个入口置位、由 change 事件（选中或取消
-// 都会触发）复位；万一对话框没开起来（未聚焦的页面调用 click 可能不弹），
-// 时间戳兜底过期，避免面板从此不再自动收起。
+// 作业图片选择器打开期间不收起面板：系统对话框会抢焦点、触发 Lively 的前台暂停，
+// 照常收起会让用户「选完图窗口就没了」。标记由三个入口置位，change 事件（选中或
+// 取消都触发）复位，另有超时兜底。
 const HOMEWORK_PICKER_WINDOW_MS = 10 * 60 * 1000;
 let homeworkPickerAt = 0;
-// 必须显式判断 homeworkPickerAt > 0：初值 0 会让 performance.now() - 0 落在窗口内，
-// 于是从页面加载起就误判为「正在选图」，导致暂停再也不收起任何面板。
+// 必须判 > 0：初值 0 时 performance.now() - 0 落在窗口内，会从加载起就误判为在选图。
 const homeworkPickerOpen = () =>
   homeworkPickerAt > 0 && performance.now() - homeworkPickerAt < HOMEWORK_PICKER_WINDOW_MS;
 
@@ -515,7 +512,7 @@ function resetHomeworkView() {
 
 $('hwZoomOut').addEventListener('click', () => setHomeworkZoom(hwZoom - 0.25));
 $('hwZoomIn').addEventListener('click', () => setHomeworkZoom(hwZoom + 0.25));
-// 「适应」按钮已取消，改为点击百分比数字复位（键盘同样可用）。
+// 「适应」按钮已取消，改为点击百分比数字复位（键盘同样可用）
 $('hwZoomValue').addEventListener('click', resetHomeworkView);
 $('hwZoomValue').addEventListener('keydown', (event) => {
   if (event.key !== 'Enter' && event.key !== ' ') return;
